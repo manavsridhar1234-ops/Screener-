@@ -1,0 +1,6 @@
+{
+  "name": "EquityLens",
+  "description": "Production-ready equity screener and fundamental research terminal for US and Indian equities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
