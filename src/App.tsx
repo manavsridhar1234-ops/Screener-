@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { WatchlistProvider } from './context/WatchlistContext';
+import { ExperienceProvider } from './context/ExperienceContext';
+import { LoginView } from './components/Auth/LoginView';
 import { Navbar } from './components/Navbar';
 import { ScreenerView } from './components/Screener/ScreenerView';
 import { StockDetailView } from './components/StockDetail/StockDetailView';
 import { CompareView } from './components/Compare/CompareView';
 import { WatchlistView } from './components/Watchlist/WatchlistView';
 import { AddStockModal } from './components/Screener/AddStockModal';
+import { FooterDataSources } from './components/Common/FooterDataSources';
 import { refreshUniverseData, fetchScreenerStocks } from './services/api';
 import {
   TrendingUp,
@@ -17,6 +21,7 @@ import {
 } from 'lucide-react';
 
 function AppContent() {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'screener' | 'detail' | 'watchlist' | 'compare'>('screener');
   const [selectedStockSymbol, setSelectedStockSymbol] = useState<string>('MSFT');
   const [compareList, setCompareList] = useState<string[]>(['MSFT', 'SHAKTIPUMP.NS']);
@@ -27,6 +32,7 @@ function AppContent() {
 
   // Load initial universe stats
   useEffect(() => {
+    if (!isAuthenticated) return;
     fetchScreenerStocks({}, 'marketCap', 'desc', 1, 1)
       .then((res) => {
         setUniverseCount(res.universeCount || res.total || 38);
@@ -35,7 +41,11 @@ function AppContent() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
 
   const handleSelectStock = (symbol: string) => {
     setSelectedStockSymbol(symbol.toUpperCase());
@@ -154,58 +164,20 @@ function AppContent() {
         }}
       />
 
-      {/* Institutional Terminal Footer */}
-      <footer className="border-t border-[#1E2638] bg-[#0A0D13] py-6 text-xs text-slate-400 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-slate-300">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono font-medium">BFF Data Engine Online</span>
-              </div>
-              <span>•</span>
-              <span className="font-mono text-slate-400">
-                Tracking {universeCount} US & Indian Equities
-              </span>
-              <span>•</span>
-              <span className="font-mono text-slate-500 hidden sm:inline">
-                Last Sync: {lastUpdatedTime}
-              </span>
-            </div>
-
-            {/* Quick Benchmark Tickers */}
-            <div className="flex items-center gap-2 font-mono text-[11px] flex-wrap justify-center">
-              <span className="text-slate-500">Quick Access:</span>
-              {['MSFT', 'SHAKTIPUMP.NS', 'RELIANCE.NS', 'NVDA', 'TCS.NS', 'AAPL'].map((sym) => (
-                <button
-                  key={sym}
-                  onClick={() => handleSelectStock(sym)}
-                  className="px-2 py-0.5 rounded bg-[#121622] hover:bg-[#1C2538] text-slate-300 hover:text-blue-400 border border-[#1E2638] transition"
-                >
-                  {sym}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-[#171E2D] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400">
-            <p>
-              EquityLens Research Terminal — Market quotes and financial statements powered by Yahoo Finance API with resilient server caching and missing-data normalization.
-            </p>
-            <p className="font-mono text-slate-400">
-              Technical Honesty & Integrity Standard
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Institutional Terminal Footer & Data Sources Attribution */}
+      <FooterDataSources />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <WatchlistProvider>
-      <AppContent />
-    </WatchlistProvider>
+    <AuthProvider>
+      <ExperienceProvider>
+        <WatchlistProvider>
+          <AppContent />
+        </WatchlistProvider>
+      </ExperienceProvider>
+    </AuthProvider>
   );
 }

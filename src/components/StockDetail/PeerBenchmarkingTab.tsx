@@ -155,15 +155,15 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                   {currentStock.exchange} • {currentStock.country}
                 </td>
                 <td className="py-3 px-3 text-right font-mono font-semibold text-white">
-                  {formatCurrency(currentStock.price, currentStock.currency, false)}
+                  {formatCurrency(currentStock?.price, currentStock?.currency, false)}
                 </td>
                 <td className="py-3 px-3 text-right font-mono">
-                  <span className={(currentStock.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                    {formatPercent(currentStock.dayChangePercent)}
+                  <span className={(currentStock?.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                    {formatPercent(currentStock?.dayChangePercent)}
                   </span>
                 </td>
                 <td className="py-3 px-3 text-right font-mono text-slate-300">
-                  {formatCurrency(currentStock.marketCap, currentStock.currency)}
+                  {formatCurrency(currentStock?.marketCap, currentStock?.currency)}
                 </td>
                 <td className="py-3 px-3 text-right font-mono font-bold text-blue-400">
                   {formatRatio(currentStock.peRatio)}
@@ -204,15 +204,15 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                       {peer.exchange} • {peer.country}
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-medium text-white">
-                      {formatCurrency(peer.price, peer.currency, false)}
+                      {formatCurrency(peer?.price, peer?.currency, false)}
                     </td>
                     <td className="py-3 px-3 text-right font-mono">
-                      <span className={(peer.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                        {formatPercent(peer.dayChangePercent)}
+                      <span className={(peer?.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                        {formatPercent(peer?.dayChangePercent)}
                       </span>
                     </td>
                     <td className="py-3 px-3 text-right font-mono text-slate-300">
-                      {formatCurrency(peer.marketCap, peer.currency)}
+                      {formatCurrency(peer?.marketCap, peer?.currency)}
                     </td>
                     <td className="py-3 px-3 text-right font-mono text-slate-200">
                       {formatRatio(peer.peRatio)}

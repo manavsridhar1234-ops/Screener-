@@ -20,12 +20,20 @@ import {
   Users,
   Award,
   ArrowRight,
+  Sparkles,
+  BarChart3,
+  HelpCircle,
+  Bot,
+  FileText,
+  Printer,
 } from 'lucide-react';
 import type {
   NormalizedStock,
   HistoricalQuote,
   StatementRow,
   PeerBenchmarkData,
+  FinancialGrowthPoint,
+  MetricDefinition,
 } from '../../types';
 import {
   fetchStockFundamentals,
@@ -40,8 +48,16 @@ import {
   formatNumber,
   formatDate,
 } from '../../utils/formatters';
+import { exportStockModelToCsv } from '../../utils/exportSpreadsheet';
 import { useWatchlist } from '../../context/WatchlistContext';
+import { useExperience } from '../../context/ExperienceContext';
+import { getMetricDefinition } from '../../data/metricDefinitions';
 import { PeerBenchmarkingTab } from './PeerBenchmarkingTab';
+import { FinancialGrowthCharts } from './FinancialGrowthCharts';
+import { StockAiChat } from './StockAiChat';
+import { MetricExplainerModal } from '../MetricExplainer/MetricExplainerModal';
+import { InvestmentMemoModal } from './InvestmentMemoModal';
+import { ClickableMetric } from '../Common/ClickableMetric';
 
 interface StockDetailViewProps {
   symbol: string;
@@ -59,6 +75,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   onCompareWithPeers,
 }) => {
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
+  const { experienceLevel } = useExperience();
 
   const [stock, setStock] = useState<NormalizedStock | null>(null);
   const [historyQuotes, setHistoryQuotes] = useState<HistoricalQuote[]>([]);
@@ -67,11 +84,37 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
     bs: StatementRow[];
     cf: StatementRow[];
   }>({ is: [], bs: [], cf: [] });
+  const [growthSeries, setGrowthSeries] = useState<FinancialGrowthPoint[]>([]);
 
   const [chartRange, setChartRange] = useState<'1d' | '5d' | '1m' | '6m' | '1y' | '5y'>('1y');
-  const [activeTab, setActiveTab] = useState<'overview' | 'peers' | 'financials' | 'integrity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'growth' | 'peers' | 'financials' | 'integrity'>('overview');
   const [activeStatementTab, setActiveStatementTab] = useState<'is' | 'bs' | 'cf'>('is');
   const [benchmarkData, setBenchmarkData] = useState<PeerBenchmarkData | null>(null);
+
+  // AI Chat & Metric Explainer states
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isMemoOpen, setIsMemoOpen] = useState(false);
+  const [aiInitialQuestion, setAiInitialQuestion] = useState<string | null>(null);
+
+  const [explainerMetric, setExplainerMetric] = useState<MetricDefinition | null>(null);
+  const [explainerRawValue, setExplainerRawValue] = useState<any>(null);
+  const [explainerFormattedValue, setExplainerFormattedValue] = useState<string>('');
+  const [isExplainerOpen, setIsExplainerOpen] = useState<boolean>(false);
+
+  const handleMetricClick = (metricKey: string, rawVal: any, formattedVal: string) => {
+    const def = getMetricDefinition(metricKey);
+    if (def) {
+      setExplainerMetric(def);
+      setExplainerRawValue(rawVal);
+      setExplainerFormattedValue(formattedVal);
+      setIsExplainerOpen(true);
+    }
+  };
+
+  const handleAskAiAboutMetric = (question: string) => {
+    setAiInitialQuestion(question);
+    setIsAiChatOpen(true);
+  };
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isChartLoading, setIsChartLoading] = useState<boolean>(false);
@@ -92,7 +135,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
       .then(([fund, stmt, peerData]) => {
         if (!isCancelled) {
           setStock(fund);
-          setStatements(stmt);
+          setStatements({ is: stmt.is, bs: stmt.bs, cf: stmt.cf });
+          setGrowthSeries(stmt.growthSeries || []);
           setBenchmarkData(peerData);
         }
       })
@@ -265,6 +309,41 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              {/* Ask AI Analyst Button */}
+              <button
+                id="ask-stock-ai-action-btn"
+                onClick={() => setIsAiChatOpen(true)}
+                title="Ask the in-house AI Analyst anything about this stock"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-200 text-slate-900 shadow-md transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-slate-800" />
+                <span>Ask AI Analyst</span>
+              </button>
+
+              {/* Export Model to Excel / CSV */}
+              <button
+                id="export-model-csv-btn"
+                onClick={() => exportStockModelToCsv(stock, growthSeries, statements)}
+                title="Download 5-Year Financial Statements & Valuation Multiples as CSV/Excel"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#151B28] hover:bg-[#1C2538] text-slate-200 border border-[#222C3E] transition shadow-sm"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-slate-400" />
+                <span className="hidden xl:inline">Export</span>
+                <span>Model (Excel)</span>
+              </button>
+
+              {/* 1-Page Investment Memo / PDF Tearsheet */}
+              <button
+                id="view-investment-memo-btn"
+                onClick={() => setIsMemoOpen(true)}
+                title="Generate printable 1-Page Executive Investment Memo / PDF Tearsheet"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#151B28] hover:bg-[#1C2538] text-slate-200 border border-[#222C3E] transition shadow-sm"
+              >
+                <FileText className="w-4 h-4 text-slate-400" />
+                <span className="hidden xl:inline">1-Page</span>
+                <span>Tearsheet (PDF)</span>
+              </button>
+
               {benchmarkData && benchmarkData.peerStocks.length > 0 && (
                 <button
                   id="compare-peers-btn"
@@ -277,11 +356,11 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                     }
                   }}
                   title={`Auto-populate Side-by-Side matrix with ${benchmarkData.peerStocks.map((p) => p.symbol).join(', ')}`}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-blue-500/40 bg-blue-950/40 text-blue-300 hover:bg-blue-900/60 hover:text-white transition shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white transition shadow-sm"
                 >
-                  <Users className="w-4 h-4 text-blue-400" />
-                  <span>Compare with Peers</span>
-                  <span className="text-[10px] bg-blue-800/60 text-blue-200 px-1.5 py-0.5 rounded-full font-mono">
+                  <Users className="w-4 h-4 text-slate-400" />
+                  <span>Peers</span>
+                  <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-full font-mono border border-slate-700">
                     {benchmarkData.peerStocks.length}
                   </span>
                 </button>
@@ -290,15 +369,15 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               <button
                 id="toggle-watchlist-btn"
                 onClick={() => toggleWatchlist(stock.symbol)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
                   isInWatchlist(stock.symbol)
-                    ? 'bg-amber-950/40 text-amber-300 border-amber-800/60'
+                    ? 'bg-slate-800 text-white border-slate-600'
                     : 'bg-[#151B28] text-slate-300 border-[#1E2638] hover:bg-[#1A2234]'
                 }`}
               >
                 <Star
                   className={`w-4 h-4 ${
-                    isInWatchlist(stock.symbol) ? 'fill-amber-400 text-amber-400' : 'text-slate-400'
+                    isInWatchlist(stock.symbol) ? 'fill-white text-white' : 'text-slate-400'
                   }`}
                 />
                 <span>{isInWatchlist(stock.symbol) ? 'Watching' : 'Watchlist'}</span>
@@ -307,9 +386,9 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               <button
                 id="toggle-compare-btn"
                 onClick={() => onToggleCompare(stock.symbol)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
                   isCompared
-                    ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                    ? 'bg-slate-800 text-white border-slate-600 shadow-sm'
                     : 'bg-[#151B28] text-slate-300 border-[#1E2638] hover:bg-[#1A2234]'
                 }`}
               >
@@ -488,14 +567,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Navigation Tabs: Overview, Peers & Benchmarks, Financial Statements, Data Integrity */}
+      {/* 3. Navigation Tabs: Overview, Growth, Peers & Benchmarks, Financial Statements, Data Integrity */}
       <div className="flex items-center gap-2 border-b border-[#1E2638] pb-1 overflow-x-auto">
         <button
           id="detail-tab-overview"
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'overview'
-              ? 'border-blue-500 text-blue-400 bg-[#121622]'
+              ? 'border-sky-500 text-sky-400 bg-[#121622]'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -504,11 +583,27 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </button>
 
         <button
+          id="detail-tab-growth"
+          onClick={() => setActiveTab('growth')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+            activeTab === 'growth'
+              ? 'border-sky-500 text-sky-400 bg-[#121622]'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <BarChart3 className="w-3.5 h-3.5" />
+          <span>Financial Growth & Cash Flow</span>
+          <span className="px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-300 font-mono text-[10px]">
+            5Y Trend
+          </span>
+        </button>
+
+        <button
           id="detail-tab-peers"
           onClick={() => setActiveTab('peers')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'peers'
-              ? 'border-blue-500 text-blue-400 bg-[#121622]'
+              ? 'border-sky-500 text-sky-400 bg-[#121622]'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -526,7 +621,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('financials')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'financials'
-              ? 'border-blue-500 text-blue-400 bg-[#121622]'
+              ? 'border-sky-500 text-sky-400 bg-[#121622]'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -539,7 +634,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('integrity')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'integrity'
-              ? 'border-blue-500 text-blue-400 bg-[#121622]'
+              ? 'border-sky-500 text-sky-400 bg-[#121622]'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -569,141 +664,325 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         )
       )}
 
+      {/* Tab: Financial Growth & Cash Flow Charts */}
+      {activeTab === 'growth' && (
+        <div className="space-y-4">
+          <FinancialGrowthCharts
+            growthSeries={growthSeries}
+            stock={stock}
+            currency={stock.currency}
+            onMetricClick={handleMetricClick}
+          />
+        </div>
+      )}
+
       {/* Tab 1: Core Fundamentals & Multiples */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Valuation Multiples */}
-          <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-              <CircleDollarSign className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
-                Valuation Multiples
-              </h3>
+        <div className="space-y-6">
+          {/* Interactive Metric Hint Banner */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-sky-400" />
+              <span>
+                <strong>Interactive Metrics:</strong> Click on any number below to view calculation formulas,{' '}
+                {experienceLevel === 'beginner' ? 'beginner-friendly intuitive summaries' : 'institutional analysis rules'}, or ask AI.
+              </span>
             </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Trailing P/E (TTM)</span>
-                <span className="font-mono text-white font-medium">{formatRatio(stock.peRatio)}</span>
+            <button
+              onClick={() => setIsAiChatOpen(true)}
+              className="text-sky-400 hover:text-sky-300 font-medium inline-flex items-center gap-1 transition"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>Open AI Chat</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Valuation Multiples */}
+            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
+                <CircleDollarSign className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+                  Valuation Multiples
+                </h3>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Forward P/E</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.forwardPe)}</span>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Trailing P/E (TTM)</span>
+                  <ClickableMetric
+                    metricKey="peRatio"
+                    value={stock.peRatio}
+                    formattedValue={formatRatio(stock.peRatio)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-white font-medium"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Forward P/E</span>
+                  <ClickableMetric
+                    metricKey="forwardPe"
+                    value={stock.forwardPe}
+                    formattedValue={formatRatio(stock.forwardPe)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Price to Book (P/B)</span>
+                  <ClickableMetric
+                    metricKey="priceToBook"
+                    value={stock.priceToBook}
+                    formattedValue={formatRatio(stock.priceToBook)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Price to Sales (P/S)</span>
+                  <ClickableMetric
+                    metricKey="priceToSales"
+                    value={stock.priceToSales}
+                    formattedValue={formatRatio(stock.priceToSales)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Enterprise Value</span>
+                  <ClickableMetric
+                    metricKey="enterpriseValue"
+                    value={stock.enterpriseValue}
+                    formattedValue={formatCurrency(stock.enterpriseValue, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">EV / EBITDA</span>
+                  <ClickableMetric
+                    metricKey="evToEbitda"
+                    value={stock.evToEbitda}
+                    formattedValue={formatRatio(stock.evToEbitda)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">EV / Revenue</span>
+                  <ClickableMetric
+                    metricKey="evToRevenue"
+                    value={stock.evToRevenue}
+                    formattedValue={formatRatio(stock.evToRevenue)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400">Dividend Yield</span>
+                  <ClickableMetric
+                    metricKey="dividendYield"
+                    value={stock.dividendYield}
+                    formattedValue={formatPercent(stock.dividendYield, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-emerald-400 font-medium"
+                  />
+                </div>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Price to Book (P/B)</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.priceToBook)}</span>
+            </div>
+
+            {/* Profitability & Returns */}
+            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
+                <Percent className="w-4 h-4 text-blue-400" />
+                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+                  Profitability & Growth
+                </h3>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Price to Sales (P/S)</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.priceToSales)}</span>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Revenue (TTM)</span>
+                  <ClickableMetric
+                    metricKey="revenue"
+                    value={stock.revenue}
+                    formattedValue={formatCurrency(stock.revenue, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-white font-medium"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Revenue Growth (YoY)</span>
+                  <ClickableMetric
+                    metricKey="revenueGrowth"
+                    value={stock.revenueGrowth}
+                    formattedValue={formatPercent(stock.revenueGrowth)}
+                    onMetricClick={handleMetricClick}
+                    className={`font-mono font-medium ${stock.revenueGrowth && stock.revenueGrowth > 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Gross Margin</span>
+                  <ClickableMetric
+                    metricKey="grossMargin"
+                    value={stock.grossMargin}
+                    formattedValue={formatPercent(stock.grossMargin, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Operating Margin</span>
+                  <ClickableMetric
+                    metricKey="operatingMargin"
+                    value={stock.operatingMargin}
+                    formattedValue={formatPercent(stock.operatingMargin, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Net Profit Margin</span>
+                  <ClickableMetric
+                    metricKey="netMargin"
+                    value={stock.netMargin}
+                    formattedValue={formatPercent(stock.netMargin, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Return on Equity (ROE)</span>
+                  <ClickableMetric
+                    metricKey="returnOnEquity"
+                    value={stock.returnOnEquity}
+                    formattedValue={formatPercent(stock.returnOnEquity, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-emerald-400 font-semibold"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Return on Assets (ROA)</span>
+                  <ClickableMetric
+                    metricKey="returnOnAssets"
+                    value={stock.returnOnAssets}
+                    formattedValue={formatPercent(stock.returnOnAssets, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400">Diluted EPS</span>
+                  <ClickableMetric
+                    metricKey="eps"
+                    value={stock.eps}
+                    formattedValue={stock.eps !== null ? stock.eps?.toFixed(2) : '—'}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-white font-medium"
+                  />
+                </div>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Enterprise Value</span>
-                <span className="font-mono text-slate-200">{formatCurrency(stock.enterpriseValue, stock.currency)}</span>
+            </div>
+
+            {/* Financial Health & Solvency */}
+            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
+                <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+                  Financial Health
+                </h3>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">EV / EBITDA</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.evToEbitda)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">EV / Revenue</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.evToRevenue)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Dividend Yield</span>
-                <span className="font-mono text-emerald-400 font-medium">{formatPercent(stock.dividendYield, false)}</span>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Total Cash</span>
+                  <ClickableMetric
+                    metricKey="totalCash"
+                    value={stock.totalCash}
+                    formattedValue={formatCurrency(stock.totalCash, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-white font-medium"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Total Debt</span>
+                  <ClickableMetric
+                    metricKey="totalDebt"
+                    value={stock.totalDebt}
+                    formattedValue={formatCurrency(stock.totalDebt, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Debt to Equity</span>
+                  <ClickableMetric
+                    metricKey="debtToEquity"
+                    value={stock.debtToEquity}
+                    formattedValue={formatPercent(stock.debtToEquity, false)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Current Ratio</span>
+                  <ClickableMetric
+                    metricKey="currentRatio"
+                    value={stock.currentRatio}
+                    formattedValue={formatRatio(stock.currentRatio, '')}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Quick Ratio</span>
+                  <ClickableMetric
+                    metricKey="quickRatio"
+                    value={stock.quickRatio}
+                    formattedValue={formatRatio(stock.quickRatio, '')}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Operating Cash Flow</span>
+                  <ClickableMetric
+                    metricKey="operatingCashFlow"
+                    value={stock.operatingCashFlow}
+                    formattedValue={formatCurrency(stock.operatingCashFlow, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
+                  <span className="text-slate-400">Free Cash Flow</span>
+                  <ClickableMetric
+                    metricKey="freeCashFlow"
+                    value={stock.freeCashFlow}
+                    formattedValue={formatCurrency(stock.freeCashFlow, stock.currency)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-white font-medium"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400">Beta (5Y Monthly)</span>
+                  <ClickableMetric
+                    metricKey="beta"
+                    value={stock.beta}
+                    formattedValue={formatNumber(stock.beta, 2)}
+                    onMetricClick={handleMetricClick}
+                    className="font-mono text-slate-200"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Profitability & Returns */}
-          <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-              <Percent className="w-4 h-4 text-blue-400" />
-              <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
-                Profitability & Growth
-              </h3>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Revenue (TTM)</span>
-                <span className="font-mono text-white font-medium">{formatCurrency(stock.revenue, stock.currency)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Revenue Growth (YoY)</span>
-                <span className={`font-mono font-medium ${stock.revenueGrowth && stock.revenueGrowth > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {formatPercent(stock.revenueGrowth)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Gross Margin</span>
-                <span className="font-mono text-slate-200">{formatPercent(stock.grossMargin, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Operating Margin</span>
-                <span className="font-mono text-slate-200">{formatPercent(stock.operatingMargin, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Net Profit Margin</span>
-                <span className="font-mono text-slate-200">{formatPercent(stock.netMargin, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Return on Equity (ROE)</span>
-                <span className="font-mono text-emerald-400 font-semibold">{formatPercent(stock.returnOnEquity, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Return on Assets (ROA)</span>
-                <span className="font-mono text-slate-200">{formatPercent(stock.returnOnAssets, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Diluted EPS</span>
-                <span className="font-mono text-white font-medium">{stock.eps !== null ? stock.eps?.toFixed(2) : '—'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Financial Health & Solvency */}
-          <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-              <ShieldCheck className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
-                Financial Health
-              </h3>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Total Cash</span>
-                <span className="font-mono text-white font-medium">{formatCurrency(stock.totalCash, stock.currency)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Total Debt</span>
-                <span className="font-mono text-slate-200">{formatCurrency(stock.totalDebt, stock.currency)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Debt to Equity</span>
-                <span className="font-mono text-slate-200">{formatPercent(stock.debtToEquity, false)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Current Ratio</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.currentRatio, '')}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Quick Ratio</span>
-                <span className="font-mono text-slate-200">{formatRatio(stock.quickRatio, '')}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Operating Cash Flow</span>
-                <span className="font-mono text-slate-200">{formatCurrency(stock.operatingCashFlow, stock.currency)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                <span className="text-slate-400">Free Cash Flow</span>
-                <span className="font-mono text-white font-medium">{formatCurrency(stock.freeCashFlow, stock.currency)}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Beta (5Y Monthly)</span>
-                <span className="font-mono text-slate-200">{formatNumber(stock.beta, 2)}</span>
-              </div>
-            </div>
+          {/* Embedded Financial Growth & Cash Flow Charts on Overview */}
+          <div className="pt-2">
+            <FinancialGrowthCharts
+              growthSeries={growthSeries}
+              stock={stock}
+              currency={stock.currency}
+              onMetricClick={handleMetricClick}
+            />
           </div>
         </div>
       )}
@@ -838,6 +1117,50 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           </p>
         </div>
       )}
+
+      {/* Floating Quick Ask AI Button when panel is closed */}
+      {!isAiChatOpen && (
+        <button
+          id="floating-ask-ai-btn"
+          onClick={() => setIsAiChatOpen(true)}
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white hover:bg-slate-200 text-slate-900 shadow-xl shadow-black/40 font-medium text-xs border border-slate-300 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-slate-900" />
+          <span>Ask AI about {stock.symbol}</span>
+        </button>
+      )}
+
+      {/* 1-Page Investment Memo / PDF Tearsheet Modal */}
+      <InvestmentMemoModal
+        isOpen={isMemoOpen}
+        onClose={() => setIsMemoOpen(false)}
+        stock={stock}
+        benchmarkData={benchmarkData}
+        growthSeries={growthSeries}
+      />
+
+      {/* Metric Explainer Modal */}
+      <MetricExplainerModal
+        isOpen={isExplainerOpen}
+        onClose={() => setIsExplainerOpen(false)}
+        metric={explainerMetric}
+        rawValue={explainerRawValue}
+        formattedValue={explainerFormattedValue}
+        symbol={stock.symbol}
+        companyName={stock.companyName}
+        onAskAiAboutMetric={handleAskAiAboutMetric}
+      />
+
+      {/* In-House AI Stock Assistant Chat Panel */}
+      <StockAiChat
+        stock={stock}
+        benchmarkData={benchmarkData}
+        growthSeries={growthSeries}
+        isOpen={isAiChatOpen}
+        onClose={() => setIsAiChatOpen(false)}
+        initialQuestion={aiInitialQuestion}
+        onClearInitialQuestion={() => setAiInitialQuestion(null)}
+      />
     </div>
   );
 };

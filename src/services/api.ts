@@ -5,6 +5,7 @@ import type {
   ScreenerFilters,
   ScreenerPreset,
   PeerBenchmarkData,
+  FinancialGrowthPoint,
 } from '../types';
 
 export interface ScreenerResponse {
@@ -159,20 +160,22 @@ export async function fetchStockHistory(
 }
 
 /**
- * Fetch stock financial statements
+ * Fetch stock financial statements and multi-year growth series
  */
 export async function fetchStockStatements(symbol: string): Promise<{
   is: StatementRow[];
   bs: StatementRow[];
   cf: StatementRow[];
+  growthSeries: FinancialGrowthPoint[];
 }> {
   const res = await fetch(`/api/stocks/${encodeURIComponent(symbol)}/statements`);
-  if (!res.ok) return { is: [], bs: [], cf: [] };
+  if (!res.ok) return { is: [], bs: [], cf: [], growthSeries: [] };
   const data = await res.json();
   return {
     is: data.is || [],
     bs: data.bs || [],
     cf: data.cf || [],
+    growthSeries: data.growthSeries || [],
   };
 }
 
@@ -184,4 +187,28 @@ export async function fetchStockPeers(symbol: string): Promise<PeerBenchmarkData
   if (!res.ok) return null;
   const data = await res.json();
   return data.benchmark || null;
+}
+
+/**
+ * Ask In-House Stock AI Assistant
+ */
+export async function askStockAiApi(payload: {
+  symbol: string;
+  question: string;
+  history?: { role: 'user' | 'assistant'; content: string }[];
+  experienceLevel?: 'beginner' | 'pro';
+  stock?: NormalizedStock;
+  benchmarkData?: PeerBenchmarkData | null;
+  growthSeries?: FinancialGrowthPoint[];
+}): Promise<string> {
+  const res = await fetch('/api/ai/stock-chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || data.error || 'Failed to get AI analysis');
+  }
+  return data.answer;
 }

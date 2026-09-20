@@ -1,8 +1,29 @@
 import YahooFinance from 'yahoo-finance2';
-import type { NormalizedStock, HistoricalQuote, StatementRow, StockDetailData } from '../src/types';
+import type { NormalizedStock, HistoricalQuote, StatementRow, StockDetailData, FinancialGrowthPoint } from '../src/types';
 
-// Instantiate YahooFinance client with notice suppression
-const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+// Safely resolve YahooFinance client in both ESM (dev) and CommonJS bundled output (Cloud Run production)
+function initYahooFinance(): any {
+  const mod: any = YahooFinance;
+  const ClientClass =
+    typeof mod === 'function'
+      ? mod
+      : typeof mod?.default === 'function'
+      ? mod.default
+      : typeof mod?.default?.default === 'function'
+      ? mod.default.default
+      : null;
+
+  if (ClientClass) {
+    try {
+      return new ClientClass({ suppressNotices: ['yahooSurvey'] });
+    } catch {
+      return ClientClass;
+    }
+  }
+  return mod;
+}
+
+const yf = initYahooFinance();
 
 // In-memory cache for profiles and quotes (15-minute TTL for quotes, 24-hour for fundamentals)
 interface CacheEntry<T> {
@@ -304,9 +325,9 @@ export async function fetchStockStatements(symbol: string) {
   }
 
   try {
-    const twoYearsAgo = new Date(Date.now() - 3 * 365 * 24 * 3600 * 1000);
+    const fiveYearsAgo = new Date(Date.now() - 5.5 * 365 * 24 * 3600 * 1000);
     const ts = await yf.fundamentalsTimeSeries(resolved, {
-      period1: twoYearsAgo,
+      period1: fiveYearsAgo,
       module: 'all',
       type: 'annual'
     }).catch(() => []);
@@ -317,9 +338,10 @@ export async function fetchStockStatements(symbol: string) {
     const is: StatementRow[] = [];
     const bs: StatementRow[] = [];
     const cf: StatementRow[] = [];
+    const growthSeries: FinancialGrowthPoint[] = [];
 
     if (ts && ts.length > 0) {
-      // Sort descending by date
+      // Sort descending by date for latest statements
       const sorted = [...ts].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const latest = sorted[0] as any;
       const period = latest.date ? new Date(latest.date).getFullYear().toString() : 'FY Latest';
@@ -350,13 +372,59 @@ export async function fetchStockStatements(symbol: string) {
       if (latest.freeCashFlow !== undefined) cf.push({ label: 'Free Cash Flow', period, value: latest.freeCashFlow, currency });
       if (latest.financingCashFlow !== undefined) cf.push({ label: 'Financing Cash Flow', period, value: latest.financingCashFlow, currency });
       if (latest.investingCashFlow !== undefined) cf.push({ label: 'Investing Cash Flow', period, value: latest.investingCashFlow, currency });
+
+      // Multi-year chronological series for Growth & FCF charts (sorted ascending by date)
+      const chronological = [...ts]
+        .filter((item: any) => item && item.date && (item.totalRevenue !== undefined || item.netIncome !== undefined || item.freeCashFlow !== undefined))
+        .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      for (let i = 0; i < chronological.length; i++) {
+        const item = chronological[i] as any;
+        const prev = i > 0 ? (chronological[i - 1] as any) : null;
+        const d = new Date(item.date);
+        const yearLabel = `FY ${d.getFullYear()}`;
+
+        const rev = item.totalRevenue ?? null;
+        const netInc = item.netIncome ?? null;
+        const fcf = item.freeCashFlow ?? (item.operatingCashFlow !== undefined && item.capitalExpenditure !== undefined ? item.operatingCashFlow - Math.abs(item.capitalExpenditure) : null);
+        const opCash = item.operatingCashFlow ?? null;
+        const grossProf = item.grossProfit ?? null;
+
+        let revGrowthYoY: number | null = null;
+        if (rev !== null && prev && prev.totalRevenue) {
+          revGrowthYoY = ((rev - prev.totalRevenue) / prev.totalRevenue) * 100;
+        }
+
+        let netIncGrowthYoY: number | null = null;
+        if (netInc !== null && prev && prev.netIncome && prev.netIncome !== 0) {
+          netIncGrowthYoY = ((netInc - prev.netIncome) / Math.abs(prev.netIncome)) * 100;
+        }
+
+        let fcfMargin: number | null = null;
+        if (fcf !== null && rev !== null && rev > 0) {
+          fcfMargin = (fcf / rev) * 100;
+        }
+
+        growthSeries.push({
+          year: yearLabel,
+          date: item.date,
+          revenue: rev,
+          netIncome: netInc,
+          freeCashFlow: fcf,
+          operatingCashFlow: opCash,
+          grossProfit: grossProf,
+          revenueGrowthYoY: revGrowthYoY !== null ? Number(revGrowthYoY.toFixed(2)) : null,
+          netIncomeGrowthYoY: netIncGrowthYoY !== null ? Number(netIncGrowthYoY.toFixed(2)) : null,
+          fcfMargin: fcfMargin !== null ? Number(fcfMargin.toFixed(2)) : null,
+        });
+      }
     }
 
-    const res = { is, bs, cf };
+    const res = { is, bs, cf, growthSeries };
     statementsCache.set(cacheKey, { data: res, timestamp: Date.now() });
     return res;
   } catch {
-    return { is: [], bs: [], cf: [] };
+    return { is: [], bs: [], cf: [], growthSeries: [] };
   }
 }
 

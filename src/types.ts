@@ -208,3 +208,38 @@ export interface PeerBenchmarkData {
   totalSectorCompanies: number;
   summary: string;
 }
+
+export type ExperienceLevel = 'beginner' | 'pro';
+
+export interface FinancialGrowthPoint {
+  year: string;
+  date: string;
+  revenue: number | null;
+  netIncome: number | null;
+  freeCashFlow: number | null;
+  operatingCashFlow?: number | null;
+  grossProfit?: number | null;
+  revenueGrowthYoY?: number | null;
+  netIncomeGrowthYoY?: number | null;
+  fcfMargin?: number | null;
+}
+
+export interface MetricDefinition {
+  key: string;
+  name: string;
+  category: 'Valuation' | 'Profitability' | 'Financial Health' | 'Growth' | 'Cash Flow' | 'Performance';
+  formula: string;
+  beginnerSummary: string;
+  beginnerAnalogy: string;
+  proExplanation: string;
+  higherIsBetter: boolean | 'contextual';
+  benchmarkGuide: string;
+  unit: 'ratio' | 'currency' | 'percent' | 'number';
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}

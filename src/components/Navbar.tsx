@@ -11,9 +11,14 @@ import {
   Building2,
   X,
   ExternalLink,
+  Sparkles,
+  User as UserIcon,
+  LogOut,
 } from 'lucide-react';
 import { searchCompanies, type SearchResult } from '../services/api';
 import { useWatchlist } from '../context/WatchlistContext';
+import { useExperience } from '../context/ExperienceContext';
+import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
   activeTab: 'screener' | 'detail' | 'watchlist' | 'compare';
@@ -41,6 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   lastUpdatedTime,
 }) => {
   const { watchlist } = useWatchlist();
+  const { experienceLevel, toggleExperienceLevel } = useExperience();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -270,14 +277,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
+            {/* Experience Level Toggle (Monochrome) */}
+            <button
+              id="header-experience-level-btn"
+              onClick={toggleExperienceLevel}
+              title={`Switch experience mode (Current: ${experienceLevel === 'beginner' ? 'Beginner' : 'Pro Analyst'}). Click to toggle.`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all shrink-0 ${
+                experienceLevel === 'beginner'
+                  ? 'bg-slate-800/80 text-slate-200 border-slate-700 hover:bg-slate-800'
+                  : 'bg-slate-800 text-white border-slate-600 hover:bg-slate-700'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline text-slate-400">Mode:</span>
+              <span className="font-semibold">{experienceLevel === 'beginner' ? 'Beginner' : 'Pro'}</span>
+            </button>
+
             {/* Add Custom Ticker Button */}
             <button
               id="header-add-ticker-btn"
               onClick={onOpenAddModal}
               title="Add any custom stock to screener"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#121622] hover:bg-[#1A2234] border border-[#1E2638] text-xs font-medium text-slate-200 hover:text-white transition shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121622] hover:bg-[#1A2234] border border-[#1E2638] text-xs font-medium text-slate-200 hover:text-white transition shrink-0"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-blue-400" />
+              <PlusCircle className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden sm:inline">Add Ticker</span>
             </button>
 
@@ -287,38 +310,70 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onRefreshUniverse}
               disabled={isRefreshing}
               title="Refresh universe fundamentals and quotes"
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#121622] hover:bg-[#1A2234] border border-[#1E2638] text-slate-400 hover:text-slate-200 transition shrink-0 disabled:opacity-50"
+              className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#121622] hover:bg-[#1A2234] border border-[#1E2638] text-slate-400 hover:text-slate-200 transition shrink-0 disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-slate-200' : ''}`} />
             </button>
+
+            {/* User Account / Sign Out */}
+            {user && (
+              <div className="flex items-center gap-1.5 pl-1 sm:pl-2 border-l border-slate-800">
+                <div
+                  className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300"
+                  title={`Logged in as ${user.email}`}
+                >
+                  <UserIcon className="w-3 h-3 text-slate-400" />
+                  <span className="truncate max-w-[100px]">{user.name}</span>
+                  {user.isGuest && (
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                      GUEST
+                    </span>
+                  )}
+                </div>
+                <button
+                  id="header-logout-btn"
+                  onClick={logout}
+                  title="Sign out / Switch account"
+                  className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#121622] hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-900/50 border border-[#1E2638] text-slate-400 transition shrink-0"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Mobile Sub-Navigation */}
-        <div className="flex md:hidden items-center justify-around py-2 border-t border-[#1E2638] text-xs">
+        <div className="flex md:hidden items-center justify-between py-2.5 border-t border-slate-800/80 text-xs overflow-x-auto gap-1">
           <button
             onClick={() => setActiveTab('screener')}
-            className={`px-3 py-1 rounded ${activeTab === 'screener' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+            className={`px-2.5 py-1 rounded-lg shrink-0 font-medium ${activeTab === 'screener' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400'}`}
           >
             Screener
           </button>
           <button
             onClick={() => setActiveTab('detail')}
-            className={`px-3 py-1 rounded ${activeTab === 'detail' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+            className={`px-2.5 py-1 rounded-lg shrink-0 font-medium ${activeTab === 'detail' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400'}`}
           >
             Stock Analysis
           </button>
           <button
             onClick={() => setActiveTab('watchlist')}
-            className={`px-3 py-1 rounded ${activeTab === 'watchlist' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+            className={`px-2.5 py-1 rounded-lg shrink-0 font-medium ${activeTab === 'watchlist' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400'}`}
           >
             Watchlist ({watchlist.length})
           </button>
           <button
             onClick={() => setActiveTab('compare')}
-            className={`px-3 py-1 rounded ${activeTab === 'compare' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+            className={`px-2.5 py-1 rounded-lg shrink-0 font-medium ${activeTab === 'compare' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400'}`}
           >
             Compare ({compareList.length})
+          </button>
+          <button
+            onClick={toggleExperienceLevel}
+            className="px-2 py-1 rounded-lg shrink-0 text-[11px] bg-slate-900 border border-slate-800 text-slate-200 font-medium"
+          >
+            {experienceLevel === 'beginner' ? 'Beg' : 'Pro'}
           </button>
         </div>
       </div>

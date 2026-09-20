@@ -16,6 +16,7 @@ import {
   SCREENER_PRESETS,
   getPeerBenchmarkData,
 } from './server/screenerService';
+import { askStockAi } from './server/geminiService';
 
 async function startServer() {
   const app = express();
@@ -219,6 +220,39 @@ async function startServer() {
     } catch (err: any) {
       console.error(`Peers error for ${req.params.symbol}:`, err.message);
       res.status(500).json({ error: 'Failed to compute peer benchmarks', message: err.message });
+    }
+  });
+
+  // 11. In-House AI Stock Chat Assistant (Gemini)
+  app.post('/api/ai/stock-chat', async (req, res) => {
+    try {
+      const { symbol, question, history, experienceLevel, stock, benchmarkData, growthSeries } = req.body;
+
+      if (!symbol || !question) {
+        res.status(400).json({ error: 'Symbol and question are required.' });
+        return;
+      }
+
+      // If full stock data not passed by client, fetch it server-side
+      const targetStock = stock || (await fetchStockFundamentals(symbol));
+
+      const answer = await askStockAi({
+        symbol,
+        stock: targetStock,
+        question,
+        history,
+        experienceLevel: experienceLevel || 'beginner',
+        benchmarkData,
+        growthSeries,
+      });
+
+      res.json({ success: true, answer, symbol });
+    } catch (err: any) {
+      console.error('Stock AI Chat error:', err?.message || err);
+      res.status(500).json({
+        error: 'Failed to process AI chat request',
+        message: err?.message || 'Server error',
+      });
     }
   });
 
