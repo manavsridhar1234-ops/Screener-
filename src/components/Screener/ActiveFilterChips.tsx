@@ -114,16 +114,16 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 py-2">
-      <span className="text-[11px] font-mono text-slate-400 mr-1">Active Filters:</span>
+      <span className="text-[11px] font-mono text-[#8B919C] mr-1">Active Filters:</span>
       {chips.map((chip) => (
         <span
           key={chip.id}
-          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-mono bg-blue-950/60 text-blue-300 border border-blue-800/60"
+          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-mono bg-[#151922] text-[#7FA6C9] border border-[#252A33]"
         >
           <span>{chip.label}</span>
           <button
             onClick={chip.onRemove}
-            className="hover:text-white p-0.5 rounded focus:outline-none"
+            className="hover:text-[#E8E9EB] p-0.5 rounded focus:outline-none"
             title="Remove filter"
           >
             <X className="w-3 h-3" />
@@ -134,7 +134,7 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
       <button
         id="clear-all-filters-btn"
         onClick={onClearAllFilters}
-        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-slate-400 hover:text-red-400 transition ml-2 font-mono"
+        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-[#8B919C] hover:text-[#B87878] transition ml-2 font-mono"
       >
         <RotateCcw className="w-3 h-3" />
         <span>Clear All ({chips.length})</span>

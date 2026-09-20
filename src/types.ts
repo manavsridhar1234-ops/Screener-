@@ -50,6 +50,14 @@ export interface NormalizedStock {
   evToEbitda: number | null;
   evToRevenue: number | null;
   fcfMargin: number | null;
+  // Institutional & Quality metrics
+  institutionalOwnership?: number | null;
+  insiderOwnership?: number | null;
+  roic?: number | null;
+  altmanZScore?: number | null;
+  interestCoverage?: number | null;
+  buybackYield?: number | null;
+  sbcToRevenue?: number | null;
   // Metadata
   lastUpdated: string;
   source: string;
@@ -242,4 +250,94 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+}
+
+export type ScorecardStatus = 'Strong' | 'Healthy' | 'Moderate' | 'Caution' | 'Mixed';
+
+export interface ScorecardDimension {
+  id: 'growth' | 'profitability' | 'balanceSheet' | 'cashFlow' | 'valuation' | 'capitalAllocation';
+  name: string;
+  status: ScorecardStatus;
+  metrics: {
+    label: string;
+    value: string;
+    benchmark: string;
+    status: 'good' | 'neutral' | 'warning';
+  }[];
+  summary: string;
+  detailNotes: string;
+}
+
+export interface QualityScorecard {
+  symbol: string;
+  dimensions: ScorecardDimension[];
+  overallSummary: string;
+}
+
+export interface HistoricalValuationMetricData {
+  key: string;
+  label: string;
+  current: number | null;
+  median5Y: number | null;
+  high5Y: number | null;
+  low5Y: number | null;
+  percentileRank5Y: number | null;
+  status: 'Cheap' | 'Fair' | 'Elevated' | 'Extended' | 'N/A';
+  history: {
+    year: string;
+    value: number | null;
+  }[];
+}
+
+export interface FinancialAnomalyAlert {
+  id: string;
+  type: 'warning' | 'verified' | 'caution' | 'info';
+  category: 'Margin' | 'Valuation' | 'Reconciliation' | 'Audit' | 'Working Capital';
+  title: string;
+  message: string;
+  metricReference?: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface DataIntegrityAudit {
+  overallCoverageScore: number; // e.g. 94%
+  freshness: {
+    dataset: string;
+    coverage: string;
+    freshness: string;
+    status: 'verified' | 'stale' | 'lagging';
+  }[];
+  anomalies: FinancialAnomalyAlert[];
+  requiresReviewCount: number;
+}
+
+export interface StockMoveDriver {
+  category: string;
+  headline: string;
+  impact: 'positive' | 'negative' | 'neutral';
+  explanation: string;
+  source: string;
+  date: string;
+}
+
+export interface InvestmentThesis {
+  symbol: string;
+  bullCase: string[];
+  bearCase: string[];
+  changeMyView: string[];
+  nextCatalysts: {
+    date: string;
+    event: string;
+    impactType: 'Earnings' | 'Investor Day' | 'Regulatory' | 'Product';
+  }[];
+  lastUpdated: string;
+}
+
+export interface SavedScreen {
+  id: string;
+  name: string;
+  description: string;
+  rulesCount: number;
+  filters: Partial<ScreenerFilters>;
+  createdAt: string;
 }

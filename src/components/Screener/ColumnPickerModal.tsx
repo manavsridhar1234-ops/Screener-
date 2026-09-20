@@ -73,18 +73,18 @@ export const ColumnPickerModal: React.FC<ColumnPickerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#1E2638]">
+        <div className="flex items-center justify-between p-5 border-b border-[#252A33]">
           <div>
-            <h3 className="text-base font-semibold text-white">Customize Table Columns</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h3 className="text-base font-semibold text-[#E8E9EB]">Customize Table Columns</h3>
+            <p className="text-xs text-[#8B919C] mt-0.5">
               Select which financial metrics to display in the screener table ({visibleColumns.length} of {ALL_COLUMNS.length} visible).
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#1A2234] transition"
+            className="p-1.5 rounded-lg text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922] transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -96,7 +96,7 @@ export const ColumnPickerModal: React.FC<ColumnPickerModalProps> = ({
             const cols = ALL_COLUMNS.filter((c) => c.group === group.key);
             return (
               <div key={group.key} className="space-y-2.5">
-                <h4 className="text-xs font-mono font-semibold text-blue-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono font-semibold text-[#7FA6C9] uppercase tracking-wider">
                   {group.title}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -111,17 +111,17 @@ export const ColumnPickerModal: React.FC<ColumnPickerModalProps> = ({
                         onClick={() => !isRequired && onToggleColumn(col.id)}
                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border text-left transition ${
                           isChecked
-                            ? 'bg-blue-950/40 border-blue-600/60 text-blue-200'
-                            : 'bg-[#182030] border-[#1E2638] text-slate-400 hover:border-slate-600'
+                            ? 'bg-[#151922] border-[#7FA6C9]/60 text-[#E8E9EB]'
+                            : 'bg-[#0B0D10] border-[#252A33] text-[#8B919C] hover:border-[#8B919C]/40 hover:text-[#E8E9EB]'
                         } ${isRequired ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <span className="truncate mr-2">{col.label}</span>
                         <div
                           className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${
-                            isChecked ? 'bg-blue-600 text-white' : 'border border-slate-600'
+                            isChecked ? 'bg-[#7FA6C9] text-[#0B0D10]' : 'border border-[#252A33]'
                           }`}
                         >
-                          {isChecked && <Check className="w-3 h-3" />}
+                          {isChecked && <Check className="w-3 h-3 stroke-[2.5]" />}
                         </div>
                       </button>
                     );
@@ -133,18 +133,18 @@ export const ColumnPickerModal: React.FC<ColumnPickerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-[#1E2638] bg-[#0E121C]">
+        <div className="flex items-center justify-between p-4 border-t border-[#252A33] bg-[#0B0D10]">
           <div className="flex items-center gap-2">
             <button
               onClick={onResetColumns}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-[#1A2234] border border-[#1E2638] transition"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922] border border-[#252A33] transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset Defaults
             </button>
             <button
               onClick={onSelectAllColumns}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-[#1A2234] border border-[#1E2638] transition"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922] border border-[#252A33] transition"
             >
               Select All
             </button>
@@ -152,7 +152,7 @@ export const ColumnPickerModal: React.FC<ColumnPickerModalProps> = ({
 
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition shadow-sm"
+            className="px-4 py-1.5 rounded-lg bg-[#7FA6C9] hover:bg-[#7FA6C9]/90 text-[#0B0D10] text-xs font-semibold transition shadow-sm"
           >
             Apply & Close
           </button>

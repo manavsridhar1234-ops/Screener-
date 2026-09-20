@@ -57,7 +57,7 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
           revenue: stock.revenue,
           netIncome: stock.netIncome,
           freeCashFlow: stock.freeCashFlow,
-          revenueGrowthYoY: stock.revenueGrowth ? Number((stock.revenueGrowth * 100).toFixed(1)) : 10.5,
+          revenueGrowthYoY: stock.revenueGrowth ? Number(stock.revenueGrowth.toFixed(1)) : 10.5,
           netIncomeGrowthYoY: 15.3,
           fcfMargin: stock.revenue && stock.freeCashFlow ? Number(((stock.freeCashFlow / stock.revenue) * 100).toFixed(1)) : 24.0,
         }
@@ -107,35 +107,35 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
       : null;
 
   return (
-    <div id="financial-growth-charts-container" className="p-5 sm:p-6 rounded-2xl bg-[#0C101A] border border-slate-800/80 space-y-6">
+    <div id="financial-growth-charts-container" className="p-5 sm:p-6 rounded-2xl bg-[#11141A] border border-[#252A33] space-y-6">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#252A33]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-1 rounded-md bg-emerald-500/10 text-emerald-400">
+            <span className="p-1 rounded-md bg-[#151922] text-[#7FA6C9] border border-[#252A33]">
               <TrendingUp className="w-4 h-4" />
             </span>
-            <h3 className="text-base font-semibold text-slate-100">
+            <h3 className="text-base font-semibold text-[#E8E9EB]">
               Financial Growth & Cash Flow
             </h3>
-            <span className="text-[11px] font-mono text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+            <span className="text-[11px] font-mono text-[#8B919C] px-2 py-0.5 rounded bg-[#0B0D10] border border-[#252A33]">
               Multi-Year Annuals
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#8B919C]">
             Historical progression of top-line revenue, net profit earnings, and real free cash flow.
           </p>
         </div>
 
         {/* View Tabs */}
-        <div className="inline-flex p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs self-start sm:self-auto">
+        <div className="inline-flex p-1 rounded-lg bg-[#0B0D10] border border-[#252A33] text-xs self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded font-medium transition-all ${
               activeTab === 'all'
-                ? 'bg-slate-800 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#151922] text-[#E8E9EB] border border-[#252A33] shadow-sm'
+                : 'text-[#8B919C] hover:text-[#E8E9EB]'
             }`}
           >
             All in One
@@ -143,10 +143,10 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('revenue')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded font-medium transition-all ${
               activeTab === 'revenue'
-                ? 'bg-sky-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#151922] text-[#7FA6C9] border border-[#252A33] shadow-sm'
+                : 'text-[#8B919C] hover:text-[#E8E9EB]'
             }`}
           >
             Revenue
@@ -154,10 +154,10 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('earnings')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded font-medium transition-all ${
               activeTab === 'earnings'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#151922] text-[#6FA58A] border border-[#252A33] shadow-sm'
+                : 'text-[#8B919C] hover:text-[#E8E9EB]'
             }`}
           >
             Earnings
@@ -165,10 +165,10 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('fcf')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded font-medium transition-all ${
               activeTab === 'fcf'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#151922] text-[#B8A36A] border border-[#252A33] shadow-sm'
+                : 'text-[#8B919C] hover:text-[#E8E9EB]'
             }`}
           >
             Free Cash Flow
@@ -178,76 +178,76 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
 
       {/* Metric Cards Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-3.5 rounded-xl bg-[#0B0D10] border border-[#252A33]">
+          <div className="flex items-center justify-between text-xs text-[#8B919C] mb-1">
             <span>Latest Annual Revenue</span>
             <ClickableMetric
               metricKey="revenueGrowth"
               onMetricClick={onMetricClick}
-              className="text-[11px] text-sky-400"
+              className="text-[11px] text-[#7FA6C9]"
             >
               YoY: {latest?.revenueGrowthYoY !== null && latest?.revenueGrowthYoY !== undefined ? `${latest.revenueGrowthYoY > 0 ? '+' : ''}${latest.revenueGrowthYoY}%` : 'N/A'}
             </ClickableMetric>
           </div>
-          <div className="text-lg font-semibold font-mono text-sky-400">
+          <div className="text-lg font-semibold font-mono text-[#7FA6C9]">
             {formatFinancialAmount(latest?.revenue)}
           </div>
           {revCagr && (
-            <div className="text-[11px] text-slate-500 mt-1">
-              {series.length}-yr CAGR: <span className="text-slate-300 font-medium">{revCagr}%</span>
+            <div className="text-[11px] text-[#8B919C] mt-1">
+              {series.length}-yr CAGR: <span className="text-[#E8E9EB] font-medium">{revCagr}%</span>
             </div>
           )}
         </div>
 
-        <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-3.5 rounded-xl bg-[#0B0D10] border border-[#252A33]">
+          <div className="flex items-center justify-between text-xs text-[#8B919C] mb-1">
             <span>Net Earnings</span>
             <ClickableMetric
               metricKey="netMargin"
               onMetricClick={onMetricClick}
-              className="text-[11px] text-emerald-400"
+              className="text-[11px] text-[#6FA58A]"
             >
               YoY: {latest?.netIncomeGrowthYoY !== null && latest?.netIncomeGrowthYoY !== undefined ? `${latest.netIncomeGrowthYoY > 0 ? '+' : ''}${latest.netIncomeGrowthYoY}%` : 'N/A'}
             </ClickableMetric>
           </div>
-          <div className="text-lg font-semibold font-mono text-emerald-400">
+          <div className="text-lg font-semibold font-mono text-[#6FA58A]">
             {formatFinancialAmount(latest?.netIncome)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            Net Margin: <span className="text-slate-300 font-medium">{stock.netMargin ? (stock.netMargin * 100).toFixed(1) + '%' : 'N/A'}</span>
+          <div className="text-[11px] text-[#8B919C] mt-1">
+            Net Margin: <span className="text-[#E8E9EB] font-medium">{stock?.netMargin ? (stock.netMargin * 100).toFixed(1) + '%' : 'N/A'}</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-3.5 rounded-xl bg-[#0B0D10] border border-[#252A33]">
+          <div className="flex items-center justify-between text-xs text-[#8B919C] mb-1">
             <span>Free Cash Flow</span>
             <ClickableMetric
               metricKey="freeCashFlow"
               onMetricClick={onMetricClick}
-              className="text-[11px] text-indigo-400"
+              className="text-[11px] text-[#B8A36A]"
             >
               Inspect
             </ClickableMetric>
           </div>
-          <div className="text-lg font-semibold font-mono text-indigo-400">
+          <div className="text-lg font-semibold font-mono text-[#B8A36A]">
             {formatFinancialAmount(latest?.freeCashFlow)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            FCF Margin: <span className="text-slate-300 font-medium">{latest?.fcfMargin ? `${latest.fcfMargin}%` : 'N/A'}</span>
+          <div className="text-[11px] text-[#8B919C] mt-1">
+            FCF Margin: <span className="text-[#E8E9EB] font-medium">{latest?.fcfMargin ? `${latest.fcfMargin}%` : 'N/A'}</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-3.5 rounded-xl bg-[#0B0D10] border border-[#252A33]">
+          <div className="flex items-center justify-between text-xs text-[#8B919C] mb-1">
             <span>FCF / Net Income Ratio</span>
-            <span className="text-[10px] text-slate-500">Earnings Quality</span>
+            <span className="text-[10px] text-[#8B919C]">Earnings Quality</span>
           </div>
-          <div className="text-lg font-semibold font-mono text-amber-400">
+          <div className="text-lg font-semibold font-mono text-[#E8E9EB]">
             {latest?.netIncome && latest?.freeCashFlow && latest.netIncome > 0
               ? `${((latest.freeCashFlow / latest.netIncome) * 100).toFixed(0)}%`
               : 'N/A'}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-[#8B919C] mt-1">
             {latest?.netIncome && latest?.freeCashFlow && latest.freeCashFlow >= latest.netIncome
               ? 'High cash conversion'
               : 'Standard accrual gap'}
@@ -257,24 +257,24 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
 
       {/* Main Bar Visualization */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <div className="flex items-center justify-between text-xs text-[#8B919C] px-1">
           <span>Fiscal Period Comparison</span>
           <div className="flex items-center gap-4 text-[11px]">
             {(activeTab === 'all' || activeTab === 'revenue') && (
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-sky-500 inline-block" />
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#7FA6C9] inline-block" />
                 Revenue
               </span>
             )}
             {(activeTab === 'all' || activeTab === 'earnings') && (
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#6FA58A] inline-block" />
                 Net Earnings
               </span>
             )}
             {(activeTab === 'all' || activeTab === 'fcf') && (
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#B8A36A] inline-block" />
                 Free Cash Flow
               </span>
             )}
@@ -282,7 +282,7 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
         </div>
 
         {/* Multi-Year Grouped Bar Chart */}
-        <div className="bg-slate-950/60 p-4 sm:p-6 rounded-xl border border-slate-800/60">
+        <div className="bg-[#0B0D10] p-4 sm:p-6 rounded-xl border border-[#252A33]">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-6 items-end min-h-[220px]">
             {series.map((point, idx) => {
               const revPercent = point.revenue ? Math.min(100, Math.max(8, (point.revenue / globalMax) * 100)) : 0;
@@ -300,24 +300,24 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
                 >
                   {/* Hover Floating Tooltip */}
                   {isHovered && (
-                    <div className="absolute -top-24 z-20 w-48 p-2.5 bg-slate-900 border border-slate-700 rounded-xl shadow-xl text-left text-xs space-y-1 pointer-events-none animate-fadeIn">
-                      <div className="font-semibold text-slate-200 border-b border-slate-800 pb-1 flex items-center justify-between">
+                    <div className="absolute -top-24 z-20 w-48 p-2.5 bg-[#11141A] border border-[#252A33] rounded-xl shadow-xl text-left text-xs space-y-1 pointer-events-none animate-fadeIn">
+                      <div className="font-semibold text-[#E8E9EB] border-b border-[#252A33] pb-1 flex items-center justify-between">
                         <span>{point.year}</span>
                         {point.revenueGrowthYoY !== null && point.revenueGrowthYoY !== undefined && (
-                          <span className={point.revenueGrowthYoY >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                          <span className={point.revenueGrowthYoY >= 0 ? 'text-[#6FA58A]' : 'text-[#B87878]'}>
                             {point.revenueGrowthYoY >= 0 ? '+' : ''}{point.revenueGrowthYoY}% YoY
                           </span>
                         )}
                       </div>
-                      <div className="flex justify-between text-sky-400">
+                      <div className="flex justify-between text-[#7FA6C9]">
                         <span>Revenue:</span>
                         <span className="font-mono">{formatFinancialAmount(point.revenue)}</span>
                       </div>
-                      <div className="flex justify-between text-emerald-400">
+                      <div className="flex justify-between text-[#6FA58A]">
                         <span>Net Income:</span>
                         <span className="font-mono">{formatFinancialAmount(point.netIncome)}</span>
                       </div>
-                      <div className="flex justify-between text-indigo-400">
+                      <div className="flex justify-between text-[#B8A36A]">
                         <span>Free Cash Flow:</span>
                         <span className="font-mono">{formatFinancialAmount(point.freeCashFlow)}</span>
                       </div>
@@ -330,7 +330,7 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
                       <div className="flex-1 max-w-[28px] h-full flex flex-col justify-end items-center">
                         <div
                           style={{ height: `${revPercent}%` }}
-                          className="w-full bg-gradient-to-t from-sky-600 to-sky-400 rounded-t-md transition-all duration-300 group-hover:brightness-110"
+                          className="w-full bg-[#7FA6C9] rounded-t-sm transition-all duration-300 group-hover:brightness-110"
                         />
                       </div>
                     )}
@@ -339,7 +339,7 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
                       <div className="flex-1 max-w-[28px] h-full flex flex-col justify-end items-center">
                         <div
                           style={{ height: `${netIncPercent}%` }}
-                          className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-md transition-all duration-300 group-hover:brightness-110"
+                          className="w-full bg-[#6FA58A] rounded-t-sm transition-all duration-300 group-hover:brightness-110"
                         />
                       </div>
                     )}
@@ -348,7 +348,7 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
                       <div className="flex-1 max-w-[28px] h-full flex flex-col justify-end items-center">
                         <div
                           style={{ height: `${fcfPercent}%` }}
-                          className="w-full bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-md transition-all duration-300 group-hover:brightness-110"
+                          className="w-full bg-[#B8A36A] rounded-t-sm transition-all duration-300 group-hover:brightness-110"
                         />
                       </div>
                     )}
@@ -356,15 +356,15 @@ export const FinancialGrowthCharts: React.FC<FinancialGrowthChartsProps> = ({
 
                   {/* Year Label and YoY Badge */}
                   <div className="text-center pt-1">
-                    <span className="text-xs font-mono font-medium text-slate-300 block">
+                    <span className="text-xs font-mono font-medium text-[#E8E9EB] block">
                       {point.year}
                     </span>
                     {point.revenueGrowthYoY !== null && point.revenueGrowthYoY !== undefined && (
                       <span
-                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded border border-[#252A33] ${
                           point.revenueGrowthYoY >= 0
-                            ? 'text-emerald-400 bg-emerald-500/10'
-                            : 'text-rose-400 bg-rose-500/10'
+                            ? 'text-[#6FA58A] bg-[#151922]'
+                            : 'text-[#B87878] bg-[#151922]'
                         }`}
                       >
                         {point.revenueGrowthYoY >= 0 ? '+' : ''}{point.revenueGrowthYoY}%

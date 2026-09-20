@@ -54,12 +54,12 @@ export const CompareView: React.FC<CompareViewProps> = ({
 
   if (compareList.length === 0) {
     return (
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-12 text-center max-w-lg mx-auto space-y-3">
-        <div className="w-12 h-12 rounded-full bg-blue-950/40 text-blue-400 flex items-center justify-center mx-auto">
-          <Scale className="w-6 h-6" />
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-12 text-center max-w-lg mx-auto space-y-3 shadow-sm">
+        <div className="w-12 h-12 rounded-full bg-[#151922] border border-[#252A33] text-[#7FA6C9] flex items-center justify-center mx-auto">
+          <Scale className="w-5 h-5" />
         </div>
-        <h3 className="text-base font-semibold text-white">No Stocks Selected for Comparison</h3>
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <h3 className="text-sm font-semibold text-[#E8E9EB]">No Stocks Selected for Comparison</h3>
+        <p className="text-xs text-[#8B919C] leading-relaxed">
           Select companies using the checkboxes in the Stock Screener table to analyze valuation multiples, profitability margins, and financial health side-by-side.
         </p>
       </div>
@@ -75,7 +75,7 @@ export const CompareView: React.FC<CompareViewProps> = ({
           label: '1-Day Change',
           render: (s: NormalizedStock) => {
             const p = s.dayChangePercent;
-            const col = p === null ? 'text-slate-400' : p >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            const col = p === null ? 'text-[#8B919C]' : p >= 0 ? 'text-[#6FA58A]' : 'text-[#B87878]';
             return <span className={`font-mono font-medium ${col}`}>{formatPercent(p)}</span>;
           },
         },
@@ -123,15 +123,15 @@ export const CompareView: React.FC<CompareViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-md">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-white">Side-by-Side Stock Comparison</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-950 text-blue-400 border border-blue-800 font-mono">
+            <h2 className="text-base font-semibold text-[#E8E9EB]">Side-by-Side Stock Comparison</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#151922] text-[#7FA6C9] border border-[#252A33] font-mono">
               {stocks.length} equities
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#8B919C] mt-0.5">
             Compare fundamental strength, operational profitability, and relative multiples across companies.
           </p>
         </div>
@@ -139,7 +139,7 @@ export const CompareView: React.FC<CompareViewProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onClearCompare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-[#1A2234] border border-[#1E2638] transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8B919C] hover:text-[#B87878] hover:bg-[#151922] border border-[#252A33] transition"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Clear Comparison</span>
@@ -148,30 +148,30 @@ export const CompareView: React.FC<CompareViewProps> = ({
       </div>
 
       {/* Comparison Grid Table */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-x-auto shadow-xl">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-x-auto shadow-sm">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-[#1E2638] bg-[#0E131E]">
-              <th className="py-4 px-4 w-60 text-slate-400 font-mono uppercase tracking-wider text-[11px]">
+            <tr className="border-b border-[#252A33] bg-[#0B0D10]">
+              <th className="py-4 px-4 w-60 text-[#8B919C] font-mono uppercase tracking-wider text-[11px]">
                 Metric
               </th>
               {stocks.map((stock) => (
-                <th key={stock.symbol} className="py-4 px-4 min-w-[200px] border-l border-[#1E2638]">
+                <th key={stock.symbol} className="py-4 px-4 min-w-[200px] border-l border-[#252A33]">
                   <div className="flex items-start justify-between">
                     <div>
                       <button
                         onClick={() => onSelectStock(stock.symbol)}
-                        className="font-mono font-bold text-sm text-blue-400 hover:underline block text-left"
+                        className="font-mono font-medium text-sm text-[#7FA6C9] hover:underline block text-left"
                       >
                         {stock.symbol}
                       </button>
-                      <span className="text-slate-300 font-medium truncate max-w-[150px] block mt-0.5">
+                      <span className="text-[#E8E9EB] font-medium truncate max-w-[150px] block mt-0.5">
                         {stock.companyName}
                       </span>
                     </div>
                     <button
                       onClick={() => onRemoveFromCompare(stock.symbol)}
-                      className="text-slate-500 hover:text-rose-400 p-1 rounded transition"
+                      className="text-[#8B919C] hover:text-[#B87878] p-1 rounded transition"
                       title="Remove from comparison"
                     >
                       <X className="w-4 h-4" />
@@ -182,23 +182,23 @@ export const CompareView: React.FC<CompareViewProps> = ({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[#1A2234]">
+          <tbody className="divide-y divide-[#252A33]">
             {sections.map((section) => (
               <React.Fragment key={section.title}>
-                <tr className="bg-[#151B28]/80 text-blue-400 font-mono text-[11px] font-semibold">
+                <tr className="bg-[#151922] text-[#7FA6C9] font-mono text-[11px] font-medium border-y border-[#252A33]">
                   <td colSpan={stocks.length + 1} className="py-2 px-4 uppercase tracking-wider">
                     {section.title}
                   </td>
                 </tr>
                 {section.metrics.map((m) => (
-                  <tr key={m.label} className="hover:bg-[#161D2C] transition">
-                    <td className="py-2.5 px-4 text-slate-400 font-sans font-medium">
+                  <tr key={m.label} className="hover:bg-[#151922]/60 transition">
+                    <td className="py-2.5 px-4 text-[#8B919C] font-sans font-medium">
                       {m.label}
                     </td>
                     {stocks.map((stock) => (
                       <td
                         key={stock.symbol}
-                        className="py-2.5 px-4 font-mono text-slate-200 border-l border-[#1E2638]"
+                        className="py-2.5 px-4 font-mono text-[#E8E9EB] border-l border-[#252A33]"
                       >
                         {m.render(stock)}
                       </td>

@@ -16,9 +16,9 @@ export const PresetsBar: React.FC<PresetsBarProps> = ({
   onClearPreset,
 }) => {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-[#1E2638]">
-      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono font-medium text-slate-400 shrink-0">
-        <Sparkles className="w-3 h-3 text-amber-400" />
+    <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-[#252A33]">
+      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono font-medium text-[#8B919C] shrink-0">
+        <Sparkles className="w-3 h-3 text-[#7FA6C9]" />
         <span>STRATEGY PRESETS:</span>
       </div>
 
@@ -27,8 +27,8 @@ export const PresetsBar: React.FC<PresetsBarProps> = ({
         onClick={onClearPreset}
         className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 transition ${
           activePresetId === null
-            ? 'bg-blue-600 text-white font-semibold shadow-sm'
-            : 'bg-[#121622] text-slate-300 hover:bg-[#1A2234] border border-[#1E2638]'
+            ? 'bg-[#7FA6C9] text-[#0B0D10] font-semibold shadow-sm'
+            : 'bg-[#151922] text-[#8B919C] hover:bg-[#151922]/80 hover:text-[#E8E9EB] border border-[#252A33]'
         }`}
       >
         All Equities
@@ -44,8 +44,8 @@ export const PresetsBar: React.FC<PresetsBarProps> = ({
             title={preset.description}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium shrink-0 transition ${
               isActive
-                ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400 font-semibold'
-                : 'bg-[#121622] text-slate-300 hover:bg-[#1A2234] hover:text-white border border-[#1E2638]'
+                ? 'bg-[#7FA6C9] text-[#0B0D10] shadow-sm font-semibold'
+                : 'bg-[#151922] text-[#8B919C] hover:bg-[#151922]/80 hover:text-[#E8E9EB] border border-[#252A33]'
             }`}
           >
             {isActive && <Check className="w-3 h-3" />}

@@ -96,16 +96,16 @@ ${stock.description || 'Global corporate equity overview.'}
       <div
         ref={printRef}
         id="investment-memo-content"
-        className="w-full max-w-4xl bg-[#0D111A] border border-[#20293A] rounded-2xl shadow-2xl overflow-hidden my-auto print:bg-white print:text-black print:border-none print:shadow-none print:rounded-none print:max-w-none print:w-full"
+        className="w-full max-w-4xl bg-[#11141A] border border-[#252A33] rounded-2xl shadow-2xl overflow-hidden my-auto print:bg-white print:text-black print:border-none print:shadow-none print:rounded-none print:max-w-none print:w-full"
       >
         {/* Modal Top Control Bar (Hidden on Print) */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#1E2638] bg-[#0A0E17] print:hidden">
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#252A33] bg-[#0B0D10] print:hidden">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-slate-300" />
-            <span className="text-xs font-mono font-semibold text-slate-200">
+            <span className="w-2 h-2 rounded-full bg-[#7FA6C9]" />
+            <span className="text-xs font-mono font-semibold text-[#E8E9EB]">
               1-Page Investment Tearsheet Memo
             </span>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#151922] text-[#8B919C] border border-[#252A33]">
               PDF / Print Ready
             </span>
           </div>
@@ -114,17 +114,17 @@ ${stock.description || 'Global corporate equity overview.'}
             <button
               id="copy-memo-markdown-btn"
               onClick={handleCopyMarkdown}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-[#161D2B] hover:bg-[#1E273A] border border-[#232D42] transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#E8E9EB] bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] transition"
               title="Copy memo as Markdown"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-[#6FA58A]" /> : <Copy className="w-3.5 h-3.5 text-[#8B919C]" />}
               <span>{copied ? 'Copied' : 'Copy Text'}</span>
             </button>
 
             <button
               id="print-memo-btn"
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white hover:bg-slate-200 transition shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#0B0D10] bg-[#E8E9EB] hover:bg-white transition shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print / Save as PDF</span>
@@ -133,7 +133,7 @@ ${stock.description || 'Global corporate equity overview.'}
             <button
               id="close-memo-modal-btn"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#161D2B] transition ml-2"
+              className="p-1.5 rounded-lg text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922] transition ml-2"
             >
               <X className="w-4 h-4" />
             </button>
@@ -141,33 +141,33 @@ ${stock.description || 'Global corporate equity overview.'}
         </div>
 
         {/* Printable Memo Body */}
-        <div className="p-6 sm:p-8 space-y-6 text-slate-200 print:text-black print:p-8 print:space-y-4 font-sans text-xs">
+        <div className="p-6 sm:p-8 space-y-6 text-[#E8E9EB] print:text-black print:p-8 print:space-y-4 font-sans text-xs">
           {/* Header Block */}
-          <div className="border-b border-[#1E2638] pb-5 print:border-slate-300">
+          <div className="border-b border-[#252A33] pb-5 print:border-slate-300">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white print:text-black">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#E8E9EB] print:text-black">
                     {stock.companyName}
                   </h1>
-                  <span className="font-mono text-sm px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 print:bg-slate-100 print:text-slate-800 print:border-slate-300">
+                  <span className="font-mono text-sm px-2 py-0.5 rounded bg-[#151922] text-[#E8E9EB] border border-[#252A33] print:bg-slate-100 print:text-slate-800 print:border-slate-300">
                     {stock.symbol}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 print:text-slate-600 mt-1 font-mono">
+                <p className="text-xs text-[#8B919C] print:text-slate-600 mt-1 font-mono">
                   {stock.exchange} • {stock.country} • Sector: {stock.sector || 'General Equities'} • Industry: {stock.industry || 'Diversified'}
                 </p>
               </div>
 
               {/* Price & Valuation Callout */}
               <div className="sm:text-right">
-                <div className="text-2xl font-mono font-bold text-white print:text-black">
+                <div className="text-2xl font-mono font-bold text-[#E8E9EB] print:text-black">
                   {formatCurrency(stock.price, stock.currency, false)}
                 </div>
-                <div className="text-xs font-mono text-slate-400 print:text-slate-600 mt-0.5">
+                <div className="text-xs font-mono text-[#8B919C] print:text-slate-600 mt-0.5">
                   Market Cap: {formatCurrency(stock.marketCap, stock.currency)}
                 </div>
-                <div className="text-[11px] font-mono text-slate-500 print:text-slate-500 mt-0.5">
+                <div className="text-[11px] font-mono text-[#8B919C] print:text-slate-500 mt-0.5">
                   Memo Date: {new Date().toLocaleDateString()}
                 </div>
               </div>
@@ -176,10 +176,10 @@ ${stock.description || 'Global corporate equity overview.'}
 
           {/* Section 1: Executive Summary & Moat Overview */}
           <div className="space-y-2">
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 print:text-slate-800">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#8B919C] print:text-slate-800">
               1. Executive Business Overview & Competitive Moat
             </h2>
-            <div className="bg-[#121622] p-4 rounded-xl border border-[#1E2638] text-slate-300 leading-relaxed print:bg-slate-50 print:border-slate-300 print:text-slate-800">
+            <div className="bg-[#151922] p-4 rounded-xl border border-[#252A33] text-[#E8E9EB] leading-relaxed print:bg-slate-50 print:border-slate-300 print:text-slate-800">
               <p className="line-clamp-4 print:line-clamp-none">
                 {stock.description ||
                   `${stock.companyName} is an operating enterprise listed on ${stock.exchange}. The company operates in the ${stock.sector} sector with established capital footprint and core business market share.`}
@@ -189,56 +189,56 @@ ${stock.description || 'Global corporate equity overview.'}
 
           {/* Section 2: Valuation Multiples & Capital Quality Matrix */}
           <div className="space-y-2">
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 print:text-slate-800">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#8B919C] print:text-slate-800">
               2. Fundamental Multiples & Balance Sheet Solvency
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">P/E RATIO (TTM)</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">P/E RATIO (TTM)</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatRatio(stock.peRatio)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">FORWARD P/E</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">FORWARD P/E</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatRatio(stock.forwardPe)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">EV / EBITDA</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">EV / EBITDA</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatRatio(stock.evToEbitda)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">DIVIDEND YIELD</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">DIVIDEND YIELD</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatPercent(stock.dividendYield, false)}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">RETURN ON EQUITY</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">RETURN ON EQUITY</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatPercent(stock.returnOnEquity, false)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">OPERATING MARGIN</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">OPERATING MARGIN</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatPercent(stock.operatingMargin, false)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">TOTAL DEBT</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">TOTAL DEBT</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatCurrency(stock.totalDebt, stock.currency)}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">FREE CASH FLOW</span>
-                <span className="text-sm font-mono font-bold text-white print:text-black mt-0.5 block">
+              <div className="p-2.5 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">FREE CASH FLOW</span>
+                <span className="text-sm font-mono font-semibold text-[#E8E9EB] print:text-black mt-0.5 block">
                   {formatCurrency(stock.freeCashFlow, stock.currency)}
                 </span>
               </div>
@@ -248,13 +248,13 @@ ${stock.description || 'Global corporate equity overview.'}
           {/* Section 3: 5-Year Historical Growth Trajectory */}
           {growthSeries && growthSeries.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 print:text-slate-800">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#8B919C] print:text-slate-800">
                 3. 5-Year Financial Trajectory (Income & Cash Flow)
               </h2>
-              <div className="overflow-x-auto rounded-xl border border-[#1E2638] print:border-slate-300">
+              <div className="overflow-x-auto rounded-xl border border-[#252A33] print:border-slate-300">
                 <table className="w-full text-left border-collapse text-xs font-mono">
                   <thead>
-                    <tr className="bg-[#121622] border-b border-[#1E2638] text-slate-400 print:bg-slate-100 print:border-slate-300 print:text-slate-700">
+                    <tr className="bg-[#151922] border-b border-[#252A33] text-[#8B919C] print:bg-slate-100 print:border-slate-300 print:text-slate-700">
                       <th className="py-2 px-3 font-medium">Fiscal Period</th>
                       <th className="py-2 px-3 text-right font-medium">Revenue</th>
                       <th className="py-2 px-3 text-right font-medium">YoY Growth</th>
@@ -262,24 +262,24 @@ ${stock.description || 'Global corporate equity overview.'}
                       <th className="py-2 px-3 text-right font-medium">Free Cash Flow</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#182030] print:divide-slate-200">
+                  <tbody className="divide-y divide-[#252A33] print:divide-slate-200">
                     {growthSeries.map((g, idx) => (
-                      <tr key={idx} className="hover:bg-[#161D2B] print:hover:bg-transparent">
-                        <td className="py-2 px-3 text-slate-300 print:text-black font-semibold">
+                      <tr key={idx} className="hover:bg-[#151922]/50 print:hover:bg-transparent">
+                        <td className="py-2 px-3 text-[#E8E9EB] print:text-black font-semibold">
                           {g.year}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-200 print:text-black">
+                        <td className="py-2 px-3 text-right text-[#E8E9EB] print:text-black">
                           {formatCurrency(g.revenue, stock.currency)}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-300 print:text-black">
+                        <td className="py-2 px-3 text-right text-[#8B919C] print:text-black">
                           {g.revenueGrowthYoY !== null && g.revenueGrowthYoY !== undefined
                             ? `${g.revenueGrowthYoY.toFixed(1)}%`
                             : '—'}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-200 print:text-black">
+                        <td className="py-2 px-3 text-right text-[#E8E9EB] print:text-black">
                           {formatCurrency(g.netIncome, stock.currency)}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-200 print:text-black font-semibold">
+                        <td className="py-2 px-3 text-right text-[#E8E9EB] print:text-black font-semibold">
                           {formatCurrency(g.freeCashFlow, stock.currency)}
                         </td>
                       </tr>
@@ -293,26 +293,26 @@ ${stock.description || 'Global corporate equity overview.'}
           {/* Section 4: Sector Percentile & Peer Positioning */}
           {benchmarkData && benchmarkData.percentiles && (
             <div className="space-y-2">
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 print:text-slate-800">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#8B919C] print:text-slate-800">
                 4. Sector Percentile Rankings ({benchmarkData.peerStocks.length} Industry Peers)
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div className="p-3 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                  <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">VALUATION MULTIPLE RANK</span>
-                  <div className="text-xs font-medium text-slate-200 print:text-black mt-1">
-                    Cheaper P/E than <strong className="text-white print:text-black">{benchmarkData.percentiles.peCheaperThanPercent.toFixed(0)}%</strong> of peers
+                <div className="p-3 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                  <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">VALUATION MULTIPLE RANK</span>
+                  <div className="text-xs font-medium text-[#E8E9EB] print:text-black mt-1">
+                    Cheaper P/E than <strong className="text-[#E8E9EB] print:text-black">{benchmarkData.percentiles.peCheaperThanPercent.toFixed(0)}%</strong> of peers
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                  <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">PROFITABILITY RANK (ROE)</span>
-                  <div className="text-xs font-medium text-slate-200 print:text-black mt-1">
-                    Top <strong className="text-white print:text-black">{benchmarkData.percentiles.roePercentile.toFixed(0)}th percentile</strong> in capital return
+                <div className="p-3 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                  <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">PROFITABILITY RANK (ROE)</span>
+                  <div className="text-xs font-medium text-[#E8E9EB] print:text-black mt-1">
+                    Top <strong className="text-[#E8E9EB] print:text-black">{benchmarkData.percentiles.roePercentile.toFixed(0)}th percentile</strong> in capital return
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-[#121622] border border-[#1E2638] print:bg-slate-50 print:border-slate-300">
-                  <span className="text-[10px] font-mono text-slate-400 print:text-slate-600 block">BALANCE SHEET SOLVENCY</span>
-                  <div className="text-xs font-medium text-slate-200 print:text-black mt-1">
-                    Safer Debt/Equity than <strong className="text-white print:text-black">{benchmarkData.percentiles.debtHealthPercentile.toFixed(0)}%</strong> of sector
+                <div className="p-3 rounded-lg bg-[#151922] border border-[#252A33] print:bg-slate-50 print:border-slate-300">
+                  <span className="text-[10px] font-mono text-[#8B919C] print:text-slate-600 block">BALANCE SHEET SOLVENCY</span>
+                  <div className="text-xs font-medium text-[#E8E9EB] print:text-black mt-1">
+                    Safer Debt/Equity than <strong className="text-[#E8E9EB] print:text-black">{benchmarkData.percentiles.debtHealthPercentile.toFixed(0)}%</strong> of sector
                   </div>
                 </div>
               </div>
@@ -321,24 +321,24 @@ ${stock.description || 'Global corporate equity overview.'}
 
           {/* Section 5: Key Investment Thesis & Risks */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <div className="p-3.5 rounded-xl bg-[#121622] border border-[#1E2638] space-y-1.5 print:bg-slate-50 print:border-slate-300">
-              <span className="text-xs font-mono font-bold text-slate-200 print:text-black flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-slate-400 print:text-slate-700" />
+            <div className="p-3.5 rounded-xl bg-[#151922] border border-[#252A33] space-y-1.5 print:bg-slate-50 print:border-slate-300">
+              <span className="text-xs font-mono font-bold text-[#E8E9EB] print:text-black flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5 text-[#7FA6C9] print:text-slate-700" />
                 <span>Primary Bull Catalysts</span>
               </span>
-              <ul className="text-[11px] text-slate-400 print:text-slate-700 space-y-1 list-disc list-inside leading-relaxed">
+              <ul className="text-[11px] text-[#8B919C] print:text-slate-700 space-y-1 list-disc list-inside leading-relaxed">
                 <li>Demonstrated free cash flow generation of {formatCurrency(stock.freeCashFlow, stock.currency)}.</li>
                 <li>Sustainable return on equity profile with disciplined working capital management.</li>
                 <li>Established industry presence with defensible customer switching costs.</li>
               </ul>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#121622] border border-[#1E2638] space-y-1.5 print:bg-slate-50 print:border-slate-300">
-              <span className="text-xs font-mono font-bold text-slate-200 print:text-black flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-slate-400 print:text-slate-700" />
+            <div className="p-3.5 rounded-xl bg-[#151922] border border-[#252A33] space-y-1.5 print:bg-slate-50 print:border-slate-300">
+              <span className="text-xs font-mono font-bold text-[#E8E9EB] print:text-black flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#B87878] print:text-slate-700" />
                 <span>Primary Risk Considerations</span>
               </span>
-              <ul className="text-[11px] text-slate-400 print:text-slate-700 space-y-1 list-disc list-inside leading-relaxed">
+              <ul className="text-[11px] text-[#8B919C] print:text-slate-700 space-y-1 list-disc list-inside leading-relaxed">
                 <li>Cyclical sensitivity to broader macroeconomic demand and interest rate shifts.</li>
                 <li>Ongoing reinvestment requirements to maintain competitive positioning.</li>
                 <li>Valuation multiple compression risk if forward earnings growth slows.</li>
@@ -347,7 +347,7 @@ ${stock.description || 'Global corporate equity overview.'}
           </div>
 
           {/* Institutional Tear-Sheet Footer */}
-          <div className="pt-4 border-t border-[#1E2638] flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-500 print:text-slate-500 print:border-slate-300 font-mono">
+          <div className="pt-4 border-t border-[#252A33] flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-[#8B919C] print:text-slate-500 print:border-slate-300 font-mono">
             <span>EQUITYLENS RESEARCH TERMINAL • NORMALIZED MARKET MODEL</span>
             <span>DATA SOURCE: YAHOO FINANCE BFF / SEC EDGAR • FOR RESEARCH ONLY</span>
           </div>

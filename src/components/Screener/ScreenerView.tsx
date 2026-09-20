@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   Sparkles,
+  Layers,
 } from 'lucide-react';
 import type {
   NormalizedStock,
@@ -24,6 +25,7 @@ import {
 import { PresetsBar } from './PresetsBar';
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { ScreenerFiltersComponent } from './ScreenerFilters';
+import { QueryBuilderPanel } from './QueryBuilderPanel';
 import { ScreenerTable } from './ScreenerTable';
 import {
   ColumnPickerModal,
@@ -83,6 +85,7 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({
 
   // UI Modals & Panels
   const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(false);
+  const [filterMode, setFilterMode] = useState<'categorical' | 'queryBuilder'>('categorical');
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState<boolean>(false);
 
   // Table Columns configuration (persisted to localStorage)
@@ -236,40 +239,72 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Banner & Strategy Presets */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 shadow-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 border-b border-[#1E2638] pb-3">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 border-b border-[#252A33] pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white tracking-tight">Institutional Stock Screener</h1>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-950 text-blue-400 border border-blue-800 font-mono">
+              <h1 className="text-base font-semibold text-[#E8E9EB] tracking-tight">Institutional Stock Screener</h1>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#151922] text-[#7FA6C9] border border-[#252A33] font-mono">
                 {universeCount} equities tracked
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8B919C] mt-0.5">
               Multi-metric filtering across US & Indian equities with live valuation multiples, profitability margins, and solvency ratios.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg p-0.5 bg-[#0B0D10] border border-[#252A33]">
+              <button
+                id="screener-mode-categorical-btn"
+                onClick={() => {
+                  setFilterMode('categorical');
+                  setIsFiltersExpanded(true);
+                }}
+                className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+                  filterMode === 'categorical' && isFiltersExpanded
+                    ? 'bg-[#151922] text-[#E8E9EB] border border-[#252A33]'
+                    : 'text-[#8B919C] hover:text-[#E8E9EB]'
+                }`}
+              >
+                Filters
+              </button>
+              <button
+                id="screener-mode-query-builder-btn"
+                onClick={() => {
+                  setFilterMode('queryBuilder');
+                  setIsFiltersExpanded(true);
+                }}
+                className={`px-2.5 py-1 rounded text-xs font-medium transition flex items-center gap-1 ${
+                  filterMode === 'queryBuilder' && isFiltersExpanded
+                    ? 'bg-[#151922] text-[#7FA6C9] border border-[#252A33] font-medium'
+                    : 'text-[#8B919C] hover:text-[#E8E9EB]'
+                }`}
+              >
+                <Layers className="w-3 h-3" />
+                <span>Query Builder</span>
+              </button>
+            </div>
+
             <button
               id="toggle-filter-panel-btn"
               onClick={() => setIsFiltersExpanded(prev => !prev)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
                 isFiltersExpanded
-                  ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
-                  : 'bg-[#151B28] text-slate-200 border-[#1E2638] hover:bg-[#1A2234]'
+                  ? 'bg-[#151922] text-[#E8E9EB] border-[#7FA6C9]/40 shadow-sm'
+                  : 'bg-[#151922] text-[#8B919C] hover:text-[#E8E9EB] border-[#252A33] hover:bg-[#151922]/80'
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>{isFiltersExpanded ? 'Hide Filter Controls' : 'Advanced Filters'}</span>
+              <span>{isFiltersExpanded ? 'Collapse' : 'Expand Panel'}</span>
             </button>
 
             <button
               id="quick-add-stock-btn"
               onClick={onOpenAddModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 text-xs font-medium transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#151922] hover:bg-[#151922]/80 text-[#E8E9EB] border border-[#252A33] text-xs font-medium transition"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
+              <PlusCircle className="w-3.5 h-3.5 text-[#7FA6C9]" />
               <span>Add Ticker</span>
             </button>
           </div>
@@ -292,15 +327,30 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({
         />
       </div>
 
-      {/* Collapsible Advanced Filters Section */}
+      {/* Collapsible Advanced Filters Section or Query Builder Panel */}
       {isFiltersExpanded && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-          <ScreenerFiltersComponent
-            filters={filters}
-            onUpdateFilter={handleUpdateFilter}
-            availableSectors={availableSectors}
-            availableExchanges={availableExchanges}
-          />
+          {filterMode === 'queryBuilder' ? (
+            <QueryBuilderPanel
+              onApplyQuery={(newFilters) => {
+                setFilters((prev) => ({
+                  search: prev.search || '',
+                  universe: prev.universe || 'all',
+                  ...newFilters,
+                }));
+                setActivePresetId(null);
+                setPage(1);
+              }}
+              onClose={() => setIsFiltersExpanded(false)}
+            />
+          ) : (
+            <ScreenerFiltersComponent
+              filters={filters}
+              onUpdateFilter={handleUpdateFilter}
+              availableSectors={availableSectors}
+              availableExchanges={availableExchanges}
+            />
+          )}
         </div>
       )}
 

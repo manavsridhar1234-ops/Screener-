@@ -79,19 +79,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
 
     return (
       <div className={`p-2.5 rounded-lg border transition ${
-        hasValue ? 'bg-blue-950/20 border-blue-800/60' : 'bg-[#151B28] border-[#1F293D]'
+        hasValue ? 'bg-[#151922] border-[#7FA6C9]/50' : 'bg-[#151922] border-[#252A33]'
       }`}>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
+          <label className="text-[11px] font-medium text-[#E8E9EB] flex items-center gap-1">
             <span>{label}</span>
-            {unit && <span className="text-[10px] text-slate-500 font-mono">({unit})</span>}
+            {unit && <span className="text-[10px] text-[#8B919C] font-mono">({unit})</span>}
           </label>
-          <label className="flex items-center gap-1 text-[10px] text-slate-400 cursor-pointer select-none">
+          <label className="flex items-center gap-1 text-[10px] text-[#8B919C] cursor-pointer select-none">
             <input
               type="checkbox"
               checked={range.includeMissing ?? true}
               onChange={(e) => updateRange(key, 'includeMissing', e.target.checked)}
-              className="w-3 h-3 rounded bg-[#0B0E14] border-[#1E2638] text-blue-600 focus:ring-0"
+              className="w-3 h-3 rounded bg-[#0B0D10] border-[#252A33] text-[#7FA6C9] focus:ring-0"
             />
             <span>Inc. N/A</span>
           </label>
@@ -104,7 +104,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             placeholder={placeholderMin}
             value={range.min ?? ''}
             onChange={(e) => updateRange(key, 'min', e.target.value)}
-            className="w-full bg-[#0B0E14] border border-[#1E2638] rounded px-2 py-1 text-xs text-white placeholder-slate-600 focus:border-blue-500 focus:outline-none font-mono"
+            className="w-full bg-[#0B0D10] border border-[#252A33] rounded px-2 py-1 text-xs text-[#E8E9EB] placeholder-[#8B919C] focus:border-[#7FA6C9] focus:outline-none font-mono"
           />
           <input
             type="number"
@@ -112,7 +112,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             placeholder={placeholderMax}
             value={range.max ?? ''}
             onChange={(e) => updateRange(key, 'max', e.target.value)}
-            className="w-full bg-[#0B0E14] border border-[#1E2638] rounded px-2 py-1 text-xs text-white placeholder-slate-600 focus:border-blue-500 focus:outline-none font-mono"
+            className="w-full bg-[#0B0D10] border border-[#252A33] rounded px-2 py-1 text-xs text-[#E8E9EB] placeholder-[#8B919C] focus:border-[#7FA6C9] focus:outline-none font-mono"
           />
         </div>
       </div>
@@ -140,19 +140,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
   return (
     <div className="space-y-3">
       {/* 1. Market Universe & Overview Group */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden">
         <button
           onClick={() => toggleSection('universe')}
-          className="w-full px-4 py-3 flex items-center justify-between bg-[#151B28] hover:bg-[#1A2234] transition text-left"
+          className="w-full px-4 py-3 flex items-center justify-between bg-[#151922] hover:bg-[#151922]/80 transition text-left"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-white tracking-wide">
-            <Layers className="w-4 h-4 text-blue-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#E8E9EB] tracking-wide">
+            <Layers className="w-4 h-4 text-[#7FA6C9]" />
             <span>MARKET UNIVERSE & CATEGORIES</span>
           </div>
           {openSections.universe ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[#8B919C]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#8B919C]" />
           )}
         </button>
 
@@ -160,7 +160,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
           <div className="p-4 space-y-4">
             {/* Market Selection */}
             <div>
-              <label className="text-[11px] font-mono text-slate-400 block mb-1.5 uppercase">
+              <label className="text-[11px] font-mono text-[#8B919C] block mb-1.5 uppercase">
                 Geographic Market / Universe
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -174,8 +174,8 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
                     onClick={() => onUpdateFilter('universe', item.id)}
                     className={`py-1.5 px-2 rounded-lg text-xs font-medium border text-center transition ${
                       (filters.universe || 'all') === item.id
-                        ? 'bg-blue-600 text-white border-blue-500 font-semibold shadow-sm'
-                        : 'bg-[#151B28] border-[#1F293D] text-slate-300 hover:border-slate-600'
+                        ? 'bg-[#151922] text-[#E8E9EB] border-[#7FA6C9] font-semibold'
+                        : 'bg-[#0B0D10] border-[#252A33] text-[#8B919C] hover:border-[#8B919C]/40 hover:text-[#E8E9EB]'
                     }`}
                   >
                     {item.label}
@@ -186,7 +186,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
 
             {/* Market Cap Category */}
             <div>
-              <label className="text-[11px] font-mono text-slate-400 block mb-1.5 uppercase">
+              <label className="text-[11px] font-mono text-[#8B919C] block mb-1.5 uppercase">
                 Market Cap Category
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
@@ -203,8 +203,8 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
                     onClick={() => onUpdateFilter('marketCapCategory', item.id as MarketCapCategory)}
                     className={`py-1 px-1.5 rounded-md text-[11px] font-medium border text-center transition truncate ${
                       (filters.marketCapCategory || 'all') === item.id
-                        ? 'bg-blue-600 text-white border-blue-500 font-semibold'
-                        : 'bg-[#151B28] border-[#1F293D] text-slate-400 hover:border-slate-600'
+                        ? 'bg-[#151922] text-[#E8E9EB] border-[#7FA6C9] font-semibold'
+                        : 'bg-[#0B0D10] border-[#252A33] text-[#8B919C] hover:border-[#8B919C]/40 hover:text-[#E8E9EB]'
                     }`}
                   >
                     {item.label}
@@ -216,7 +216,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             {/* Exchanges filter chips */}
             {availableExchanges.length > 0 && (
               <div>
-                <label className="text-[11px] font-mono text-slate-400 block mb-1.5 uppercase">
+                <label className="text-[11px] font-mono text-[#8B919C] block mb-1.5 uppercase">
                   Exchanges
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -228,8 +228,8 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
                         onClick={() => handleExchangeToggle(ex)}
                         className={`px-2.5 py-1 rounded-md text-xs font-mono border transition ${
                           isSelected
-                            ? 'bg-blue-600 text-white border-blue-500'
-                            : 'bg-[#151B28] border-[#1F293D] text-slate-400 hover:text-slate-200'
+                            ? 'bg-[#151922] text-[#E8E9EB] border-[#7FA6C9]'
+                            : 'bg-[#0B0D10] border-[#252A33] text-[#8B919C] hover:text-[#E8E9EB]'
                         }`}
                       >
                         {ex}
@@ -243,7 +243,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             {/* Sectors filter chips */}
             {availableSectors.length > 0 && (
               <div>
-                <label className="text-[11px] font-mono text-slate-400 block mb-1.5 uppercase">
+                <label className="text-[11px] font-mono text-[#8B919C] block mb-1.5 uppercase">
                   Sectors
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -255,8 +255,8 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
                         onClick={() => handleSectorToggle(sec)}
                         className={`px-2 py-0.5 rounded text-xs border transition ${
                           isSelected
-                            ? 'bg-blue-600 text-white border-blue-500 font-medium'
-                            : 'bg-[#151B28] border-[#1F293D] text-slate-400 hover:text-slate-200'
+                            ? 'bg-[#151922] text-[#E8E9EB] border-[#7FA6C9] font-medium'
+                            : 'bg-[#0B0D10] border-[#252A33] text-[#8B919C] hover:text-[#E8E9EB]'
                         }`}
                       >
                         {sec}
@@ -271,19 +271,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
       </div>
 
       {/* 2. Valuation Multiples Group */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden">
         <button
           onClick={() => toggleSection('valuation')}
-          className="w-full px-4 py-3 flex items-center justify-between bg-[#151B28] hover:bg-[#1A2234] transition text-left"
+          className="w-full px-4 py-3 flex items-center justify-between bg-[#151922] hover:bg-[#151922]/80 transition text-left"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-white tracking-wide">
-            <CircleDollarSign className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#E8E9EB] tracking-wide">
+            <CircleDollarSign className="w-4 h-4 text-[#7FA6C9]" />
             <span>VALUATION MULTIPLES</span>
           </div>
           {openSections.valuation ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[#8B919C]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#8B919C]" />
           )}
         </button>
 
@@ -301,19 +301,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
       </div>
 
       {/* 3. Profitability & Returns Group */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden">
         <button
           onClick={() => toggleSection('profitability')}
-          className="w-full px-4 py-3 flex items-center justify-between bg-[#151B28] hover:bg-[#1A2234] transition text-left"
+          className="w-full px-4 py-3 flex items-center justify-between bg-[#151922] hover:bg-[#151922]/80 transition text-left"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-white tracking-wide">
-            <Percent className="w-4 h-4 text-blue-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#E8E9EB] tracking-wide">
+            <Percent className="w-4 h-4 text-[#7FA6C9]" />
             <span>PROFITABILITY, MARGINS & GROWTH</span>
           </div>
           {openSections.profitability ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[#8B919C]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#8B919C]" />
           )}
         </button>
 
@@ -332,26 +332,26 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
       </div>
 
       {/* 4. Financial Health & Solvency Group */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden">
         <button
           onClick={() => toggleSection('health')}
-          className="w-full px-4 py-3 flex items-center justify-between bg-[#151B28] hover:bg-[#1A2234] transition text-left"
+          className="w-full px-4 py-3 flex items-center justify-between bg-[#151922] hover:bg-[#151922]/80 transition text-left"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-white tracking-wide">
-            <ShieldCheck className="w-4 h-4 text-indigo-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#E8E9EB] tracking-wide">
+            <ShieldCheck className="w-4 h-4 text-[#7FA6C9]" />
             <span>FINANCIAL HEALTH & BALANCE SHEET</span>
           </div>
           {openSections.health ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[#8B919C]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#8B919C]" />
           )}
         </button>
 
         {openSections.health && (
           <div className="p-4 space-y-3">
-            <div className="text-[11px] text-slate-400 bg-[#151B28] p-2.5 rounded-lg border border-[#1F293D]">
-              <span className="font-semibold text-slate-300">Financial Institution Note:</span> Traditional industrial metrics like Debt/Equity or Current Ratio may be non-applicable or not reported for banks (e.g. JPM, HDFCBANK). Check "Inc. N/A" to include them.
+            <div className="text-[11px] text-[#8B919C] bg-[#151922] p-2.5 rounded-lg border border-[#252A33]">
+              <span className="font-semibold text-[#E8E9EB]">Financial Institution Note:</span> Traditional industrial metrics like Debt/Equity or Current Ratio may be non-applicable or not reported for banks (e.g. JPM, HDFCBANK). Check "Inc. N/A" to include them.
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {renderRangeField('debtToEquity', 'Debt to Equity', '0', '150', '1', '%')}
@@ -363,19 +363,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
       </div>
 
       {/* 5. Performance & Risk Group */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden">
         <button
           onClick={() => toggleSection('performance')}
-          className="w-full px-4 py-3 flex items-center justify-between bg-[#151B28] hover:bg-[#1A2234] transition text-left"
+          className="w-full px-4 py-3 flex items-center justify-between bg-[#151922] hover:bg-[#151922]/80 transition text-left"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-white tracking-wide">
-            <Activity className="w-4 h-4 text-rose-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#E8E9EB] tracking-wide">
+            <Activity className="w-4 h-4 text-[#7FA6C9]" />
             <span>PRICE ACTION & RISK METRICS</span>
           </div>
           {openSections.performance ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[#8B919C]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#8B919C]" />
           )}
         </button>
 

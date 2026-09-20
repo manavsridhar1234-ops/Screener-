@@ -15,7 +15,9 @@ import {
 import type { NormalizedStock, TableColumnId } from '../../types';
 import { ALL_COLUMNS } from './ColumnPickerModal';
 import { formatCurrency, formatPercent, formatRatio, formatNumber } from '../../utils/formatters';
+import { exportScreenerToCsv } from '../../utils/exportSpreadsheet';
 import { useWatchlist } from '../../context/WatchlistContext';
+import { MetricTooltip } from '../Common/MetricTooltip';
 
 interface ScreenerTableProps {
   stocks: NormalizedStock[];
@@ -58,29 +60,10 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
 }) => {
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
 
-  // Export to CSV
+  // Export to CSV / Excel
   const handleExportCSV = () => {
     if (stocks.length === 0) return;
-    const activeCols = ALL_COLUMNS.filter(c => visibleColumns.includes(c.id));
-    const headerRow = activeCols.map(c => `"${c.label}"`).join(',');
-
-    const rows = stocks.map(s => {
-      return activeCols.map(c => {
-        const val = (s as any)[c.id];
-        if (val === null || val === undefined) return '""';
-        if (typeof val === 'string') return `"${val.replace(/"/g, '""')}"`;
-        return `"${val}"`;
-      }).join(',');
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headerRow, ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `equitylens_screener_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportScreenerToCsv(stocks);
   };
 
   // Helper to render formatted cell value
@@ -91,13 +74,13 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <div className="flex flex-col min-w-[170px]">
             <span
               onClick={() => onSelectStock(stock.symbol)}
-              className="text-xs font-semibold text-slate-100 hover:text-blue-400 cursor-pointer transition truncate max-w-[210px]"
+              className="text-xs font-medium text-[#E8E9EB] hover:text-[#7FA6C9] cursor-pointer transition truncate max-w-[210px]"
               title={stock.companyName}
             >
               {stock.companyName}
             </span>
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-              <span className="font-mono text-slate-300">{stock.exchange}</span>
+            <div className="flex items-center gap-1.5 text-[10px] text-[#8B919C]">
+              <span className="font-mono text-[#8B919C]">{stock.exchange}</span>
               <span>•</span>
               <span className="truncate">{stock.country}</span>
             </div>
@@ -109,18 +92,18 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onSelectStock(stock.symbol)}
-              className="font-mono font-bold text-xs text-blue-400 hover:text-blue-300 hover:underline transition text-left"
+              className="font-mono font-medium text-xs text-[#7FA6C9] hover:underline transition text-left"
             >
               {stock.symbol}
             </button>
             <button
               onClick={() => toggleWatchlist(stock.symbol)}
-              className="p-0.5 text-slate-500 hover:text-amber-400 transition"
+              className="p-0.5 text-[#8B919C] hover:text-[#B8A36A] transition"
               title={isInWatchlist(stock.symbol) ? 'Remove from Watchlist' : 'Add to Watchlist'}
             >
               <Star
                 className={`w-3.5 h-3.5 ${
-                  isInWatchlist(stock.symbol) ? 'fill-amber-400 text-amber-400' : ''
+                  isInWatchlist(stock.symbol) ? 'fill-[#B8A36A] text-[#B8A36A]' : ''
                 }`}
               />
             </button>
@@ -128,221 +111,263 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
         );
 
       case 'exchange':
-        return <span className="font-mono text-slate-300 text-xs">{stock.exchange}</span>;
+        return <span className="font-mono text-[#8B919C] text-xs">{stock.exchange}</span>;
 
       case 'country':
-        return <span className="text-slate-300 text-xs truncate max-w-[90px]">{stock.country}</span>;
+        return <span className="text-[#8B919C] text-xs truncate max-w-[90px]">{stock.country}</span>;
 
       case 'sector':
         return (
           <span
-            className="text-slate-300 text-xs truncate max-w-[130px] block"
+            className="text-[#8B919C] text-xs truncate max-w-[130px] block"
             title={stock.sector || 'Unclassified'}
           >
             {stock.sector || '—'}
           </span>
         );
 
-      case 'marketCap':
+      case 'marketCap': {
+        const val = stock.marketCap;
+        const formatted = formatCurrency(val, stock.currency);
         return (
-          <span className="font-mono text-slate-100 text-xs font-medium">
-            {formatCurrency(stock.marketCap, stock.currency)}
-          </span>
+          <MetricTooltip metricKey="marketCap" value={val} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs font-medium">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'price':
+      case 'price': {
+        const val = stock.price;
+        const formatted = formatCurrency(val, stock.currency, false);
         return (
-          <span className="font-mono text-white text-xs font-semibold">
-            {formatCurrency(stock.price, stock.currency, false)}
-          </span>
+          <MetricTooltip metricKey="price" value={val} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs font-medium">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
       case 'dayChangePercent': {
         const p = stock.dayChangePercent;
-        const color = p === null ? 'text-slate-400' : p > 0 ? 'text-emerald-400' : p < 0 ? 'text-rose-400' : 'text-slate-300';
+        const color = p === null ? 'text-[#8B919C]' : p > 0 ? 'text-[#6FA58A]' : p < 0 ? 'text-[#B87878]' : 'text-[#8B919C]';
+        const formatted = formatPercent(p);
         return (
-          <span className={`font-mono text-xs font-medium ${color}`}>
-            {formatPercent(p)}
-          </span>
+          <MetricTooltip metricKey="dayChangePercent" value={p} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs font-medium ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
-      case 'peRatio':
+      case 'peRatio': {
+        const formatted = formatRatio(stock.peRatio);
         return (
-          <span className="font-mono text-slate-200 text-xs">
-            {formatRatio(stock.peRatio)}
-          </span>
+          <MetricTooltip metricKey="peRatio" value={stock.peRatio} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'forwardPe':
+      case 'forwardPe': {
+        const formatted = formatRatio(stock.forwardPe);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.forwardPe)}
-          </span>
+          <MetricTooltip metricKey="forwardPe" value={stock.forwardPe} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'priceToBook':
+      case 'priceToBook': {
+        const formatted = formatRatio(stock.priceToBook);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.priceToBook)}
-          </span>
+          <MetricTooltip metricKey="priceToBook" value={stock.priceToBook} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'priceToSales':
+      case 'priceToSales': {
+        const formatted = formatRatio(stock.priceToSales);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.priceToSales)}
-          </span>
+          <MetricTooltip metricKey="priceToSales" value={stock.priceToSales} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'evToEbitda':
+      case 'evToEbitda': {
+        const formatted = formatRatio(stock.evToEbitda);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.evToEbitda)}
-          </span>
+          <MetricTooltip metricKey="evToEbitda" value={stock.evToEbitda} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'dividendYield':
+      case 'dividendYield': {
+        const formatted = formatPercent(stock.dividendYield, false);
         return (
-          <span className="font-mono text-slate-200 text-xs">
-            {formatPercent(stock.dividendYield, false)}
-          </span>
+          <MetricTooltip metricKey="dividendYield" value={stock.dividendYield} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#6FA58A] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'enterpriseValue':
+      case 'enterpriseValue': {
+        const formatted = formatCurrency(stock.enterpriseValue, stock.currency);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatCurrency(stock.enterpriseValue, stock.currency)}
-          </span>
+          <MetricTooltip metricKey="enterpriseValue" value={stock.enterpriseValue} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'revenue':
+      case 'revenue': {
+        const formatted = formatCurrency(stock.revenue, stock.currency);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatCurrency(stock.revenue, stock.currency)}
-          </span>
+          <MetricTooltip metricKey="revenue" value={stock.revenue} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
       case 'revenueGrowth': {
         const g = stock.revenueGrowth;
-        const color = g === null ? 'text-slate-400' : g > 0 ? 'text-emerald-400' : g < 0 ? 'text-rose-400' : 'text-slate-300';
+        const color = g === null ? 'text-[#8B919C]' : g > 0 ? 'text-[#6FA58A]' : g < 0 ? 'text-[#B87878]' : 'text-[#8B919C]';
+        const formatted = formatPercent(g);
         return (
-          <span className={`font-mono text-xs font-medium ${color}`}>
-            {formatPercent(g)}
-          </span>
+          <MetricTooltip metricKey="revenueGrowth" value={g} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs font-medium ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
-      case 'grossMargin':
+      case 'grossMargin': {
+        const formatted = formatPercent(stock.grossMargin, false);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatPercent(stock.grossMargin, false)}
-          </span>
+          <MetricTooltip metricKey="grossMargin" value={stock.grossMargin} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'operatingMargin':
+      case 'operatingMargin': {
+        const formatted = formatPercent(stock.operatingMargin, false);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatPercent(stock.operatingMargin, false)}
-          </span>
+          <MetricTooltip metricKey="operatingMargin" value={stock.operatingMargin} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
       case 'netMargin': {
         const m = stock.netMargin;
-        const color = m === null ? 'text-slate-400' : m > 0 ? 'text-emerald-400' : m < 0 ? 'text-rose-400' : 'text-slate-300';
+        const color = m === null ? 'text-[#8B919C]' : m > 0 ? 'text-[#6FA58A]' : m < 0 ? 'text-[#B87878]' : 'text-[#8B919C]';
+        const formatted = formatPercent(m, false);
         return (
-          <span className={`font-mono text-xs font-medium ${color}`}>
-            {formatPercent(m, false)}
-          </span>
+          <MetricTooltip metricKey="netMargin" value={m} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs font-medium ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
       case 'returnOnEquity': {
         const roe = stock.returnOnEquity;
-        const color = roe === null ? 'text-slate-400' : roe >= 15 ? 'text-emerald-400 font-semibold' : roe < 0 ? 'text-rose-400' : 'text-slate-200';
+        const color = roe === null ? 'text-[#8B919C]' : roe >= 15 ? 'text-[#6FA58A] font-semibold' : roe < 0 ? 'text-[#B87878]' : 'text-[#E8E9EB]';
+        const formatted = formatPercent(roe, false);
         return (
-          <span className={`font-mono text-xs ${color}`}>
-            {formatPercent(roe, false)}
-          </span>
+          <MetricTooltip metricKey="returnOnEquity" value={roe} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
-      case 'returnOnAssets':
+      case 'returnOnAssets': {
+        const formatted = formatPercent(stock.returnOnAssets, false);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatPercent(stock.returnOnAssets, false)}
-          </span>
+          <MetricTooltip metricKey="returnOnAssets" value={stock.returnOnAssets} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
       case 'debtToEquity': {
         const dte = stock.debtToEquity;
-        const color = dte === null ? 'text-slate-400' : dte > 100 ? 'text-amber-400' : 'text-slate-200';
+        const color = dte === null ? 'text-[#8B919C]' : dte > 100 ? 'text-[#B8A36A]' : 'text-[#E8E9EB]';
+        const formatted = formatPercent(dte, false);
         return (
-          <span className={`font-mono text-xs ${color}`}>
-            {formatPercent(dte, false)}
-          </span>
+          <MetricTooltip metricKey="debtToEquity" value={dte} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
-      case 'currentRatio':
+      case 'currentRatio': {
+        const formatted = formatRatio(stock.currentRatio, '');
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.currentRatio, '')}
-          </span>
+          <MetricTooltip metricKey="currentRatio" value={stock.currentRatio} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'quickRatio':
+      case 'quickRatio': {
+        const formatted = formatRatio(stock.quickRatio, '');
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatRatio(stock.quickRatio, '')}
-          </span>
+          <MetricTooltip metricKey="quickRatio" value={stock.quickRatio} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'freeCashFlow':
+      case 'freeCashFlow': {
+        const formatted = formatCurrency(stock.freeCashFlow, stock.currency);
         return (
-          <span className="font-mono text-slate-200 text-xs">
-            {formatCurrency(stock.freeCashFlow, stock.currency)}
-          </span>
+          <MetricTooltip metricKey="freeCashFlow" value={stock.freeCashFlow} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#E8E9EB] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
-      case 'beta':
+      case 'beta': {
+        const formatted = formatNumber(stock.beta, 2);
         return (
-          <span className="font-mono text-slate-300 text-xs">
-            {formatNumber(stock.beta, 2)}
-          </span>
+          <MetricTooltip metricKey="beta" value={stock.beta} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className="font-mono text-[#8B919C] text-xs">{formatted}</span>
+          </MetricTooltip>
         );
+      }
 
       case 'distFrom52wHigh': {
         const d = stock.distFrom52wHigh;
-        const color = d === null ? 'text-slate-400' : d < -30 ? 'text-rose-400' : 'text-slate-300';
+        const color = d === null ? 'text-[#8B919C]' : d < -30 ? 'text-[#B87878]' : 'text-[#8B919C]';
+        const formatted = formatPercent(d);
         return (
-          <span className={`font-mono text-xs ${color}`}>
-            {formatPercent(d)}
-          </span>
+          <MetricTooltip metricKey="distFrom52wHigh" value={d} formattedValue={formatted} stock={stock} className="justify-end w-full">
+            <span className={`font-mono text-xs ${color}`}>{formatted}</span>
+          </MetricTooltip>
         );
       }
 
       default:
-        return <span className="text-slate-400">—</span>;
+        return <span className="text-[#8B919C]">—</span>;
     }
   };
 
   const activeColumnsList = ALL_COLUMNS.filter(c => visibleColumns.includes(c.id));
 
   return (
-    <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden flex flex-col shadow-xl">
+    <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden flex flex-col shadow-sm">
       {/* Table Toolbar */}
-      <div className="p-4 border-b border-[#1E2638] flex flex-wrap items-center justify-between gap-3 bg-[#151B28]">
+      <div className="p-4 border-b border-[#252A33] flex flex-wrap items-center justify-between gap-3 bg-[#11141A]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">Results</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-blue-950/80 text-blue-400 border border-blue-800/60">
+            <span className="text-sm font-semibold text-[#E8E9EB]">Results</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-[#151922] text-[#7FA6C9] border border-[#252A33]">
               {totalCount} {totalCount === 1 ? 'stock' : 'stocks'}
             </span>
           </div>
 
           {compareList.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-blue-950/50 border border-blue-800/50 px-2.5 py-1 rounded-lg text-xs text-blue-300">
+            <div className="flex items-center gap-1.5 bg-[#151922] border border-[#252A33] px-2.5 py-1 rounded-lg text-xs text-[#7FA6C9]">
               <Scale className="w-3.5 h-3.5" />
               <span>{compareList.length} selected for comparison</span>
             </div>
@@ -354,21 +379,22 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <button
             id="customize-columns-btn"
             onClick={onOpenColumnPicker}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-[#101420] hover:bg-[#1A2234] border border-[#1E2638] transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8B919C] hover:text-[#E8E9EB] bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] transition"
           >
-            <Columns className="w-3.5 h-3.5 text-blue-400" />
+            <Columns className="w-3.5 h-3.5 text-[#7FA6C9]" />
             <span>Columns ({visibleColumns.length})</span>
           </button>
 
-          {/* Export CSV */}
+          {/* Export to Excel / CSV */}
           <button
             id="export-csv-btn"
             onClick={handleExportCSV}
             disabled={stocks.length === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-[#101420] hover:bg-[#1A2234] border border-[#1E2638] transition disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#E8E9EB] bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] transition disabled:opacity-40"
+            title="Export filtered stock universe with all valuation, profitability, and solvency metrics to CSV / Excel"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Export CSV</span>
+            <Download className="w-3.5 h-3.5 text-[#6FA58A]" />
+            <span className="hidden sm:inline font-medium">Export (Excel / CSV)</span>
           </button>
         </div>
       </div>
@@ -377,21 +403,21 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
       <div className="overflow-x-auto relative min-h-[350px]">
         {isLoading ? (
           <div className="p-8 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-            <p className="text-xs text-slate-400 font-mono">Filtering normalized equity database...</p>
+            <div className="w-7 h-7 rounded-full border-2 border-[#7FA6C9] border-t-transparent animate-spin" />
+            <p className="text-xs text-[#8B919C] font-mono">Filtering normalized equity database...</p>
           </div>
         ) : stocks.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3 max-w-md mx-auto">
-            <div className="w-12 h-12 rounded-full bg-[#182030] flex items-center justify-center text-slate-500 mb-1">
-              <AlertCircle className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-full bg-[#151922] border border-[#252A33] flex items-center justify-center text-[#8B919C] mb-1">
+              <AlertCircle className="w-5 h-5" />
             </div>
-            <h4 className="text-sm font-semibold text-white">No Matching Stocks Found</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <h4 className="text-sm font-semibold text-[#E8E9EB]">No Matching Stocks Found</h4>
+            <p className="text-xs text-[#8B919C] leading-relaxed">
               No companies in the universe match the current filter criteria. Try relaxing your valuation multiples, broadening the market cap range, or checking "Inc. N/A".
             </p>
             <button
               onClick={onClearFilters}
-              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition"
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] text-[#E8E9EB] text-xs font-medium transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset All Filters
@@ -400,7 +426,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#1E2638] bg-[#0E131E] text-[11px] font-mono text-slate-400 select-none">
+              <tr className="border-b border-[#252A33] bg-[#0B0D10] text-[11px] font-mono text-[#8B919C] select-none">
                 {/* Selection Checkbox */}
                 <th className="py-3 px-3 w-8 text-center">
                   <span className="sr-only">Select</span>
@@ -408,22 +434,34 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
 
                 {activeColumnsList.map((col) => {
                   const isSorted = sortBy === col.id;
+                  const isMetric =
+                    col.id !== 'company' &&
+                    col.id !== 'symbol' &&
+                    col.id !== 'exchange' &&
+                    col.id !== 'country' &&
+                    col.id !== 'sector';
                   return (
                     <th
                       key={col.id}
                       onClick={() => onSort(col.id)}
                       style={{ minWidth: col.minWidth || 90 }}
-                      className={`py-3 px-3 cursor-pointer hover:bg-[#182234] transition text-${col.align || 'left'} ${
-                        isSorted ? 'text-blue-400 font-bold bg-[#141B2A]' : ''
+                      className={`py-3 px-3 cursor-pointer hover:bg-[#151922] transition text-${col.align || 'left'} ${
+                        isSorted ? 'text-[#7FA6C9] font-medium bg-[#151922]' : ''
                       }`}
                     >
                       <div className={`inline-flex items-center gap-1 ${col.align === 'right' ? 'justify-end' : ''}`}>
-                        <span>{col.label}</span>
+                        {isMetric ? (
+                          <MetricTooltip metricKey={col.id} underlined={false}>
+                            <span className="hover:text-[#E8E9EB] transition-colors">{col.label}</span>
+                          </MetricTooltip>
+                        ) : (
+                          <span>{col.label}</span>
+                        )}
                         {isSorted ? (
                           sortOrder === 'asc' ? (
-                            <ArrowUp className="w-3 h-3 text-blue-400" />
+                            <ArrowUp className="w-3 h-3 text-[#7FA6C9]" />
                           ) : (
-                            <ArrowDown className="w-3 h-3 text-blue-400" />
+                            <ArrowDown className="w-3 h-3 text-[#7FA6C9]" />
                           )
                         ) : (
                           <ArrowUpDown className="w-3 h-3 opacity-30 group-hover:opacity-100" />
@@ -434,15 +472,15 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1A2234] text-xs">
+            <tbody className="divide-y divide-[#252A33] text-xs">
               {stocks.map((stock) => {
                 const isCompared = compareList.includes(stock.symbol);
                 return (
                   <tr
                     key={stock.symbol}
                     id={`stock-row-${stock.symbol}`}
-                    className={`hover:bg-[#161D2C] transition group ${
-                      isCompared ? 'bg-blue-950/30' : ''
+                    className={`hover:bg-[#151922]/60 transition group ${
+                      isCompared ? 'bg-[#7FA6C9]/10' : ''
                     }`}
                   >
                     {/* Checkbox */}
@@ -451,7 +489,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
                         type="checkbox"
                         checked={isCompared}
                         onChange={() => onToggleCompare(stock.symbol)}
-                        className="w-3.5 h-3.5 rounded bg-[#0B0E14] border-[#1E2638] text-blue-600 focus:ring-0 cursor-pointer"
+                        className="w-3.5 h-3.5 rounded bg-[#0B0D10] border-[#252A33] text-[#7FA6C9] focus:ring-0 cursor-pointer"
                         title="Select to compare"
                       />
                     </td>
@@ -474,20 +512,20 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
       </div>
 
       {/* Pagination & Footer */}
-      <div className="p-3 border-t border-[#1E2638] bg-[#0E131E] flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div className="p-3 border-t border-[#252A33] bg-[#11141A] flex flex-wrap items-center justify-between gap-3 text-xs text-[#8B919C]">
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
           <select
             value={pageSize}
             onChange={(e) => onChangePageSize(Number(e.target.value))}
-            className="bg-[#151B28] border border-[#1E2638] rounded px-2 py-1 text-xs text-slate-200 focus:outline-none"
+            className="bg-[#151922] border border-[#252A33] rounded px-2 py-1 text-xs text-[#E8E9EB] focus:outline-none"
           >
             <option value={25}>25</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
             <option value={500}>All</option>
           </select>
-          <span className="font-mono text-slate-400">
+          <span className="font-mono text-[#8B919C]">
             Page {page} of {totalPages || 1} ({totalCount} total stocks)
           </span>
         </div>
@@ -496,14 +534,14 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <button
             onClick={() => onChangePage(page - 1)}
             disabled={page <= 1}
-            className="px-2.5 py-1 rounded bg-[#151B28] border border-[#1E2638] text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="px-2.5 py-1 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] hover:text-[#E8E9EB] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             Previous
           </button>
           <button
             onClick={() => onChangePage(page + 1)}
             disabled={page >= totalPages}
-            className="px-2.5 py-1 rounded bg-[#151B28] border border-[#1E2638] text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="px-2.5 py-1 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] hover:text-[#E8E9EB] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             Next
           </button>

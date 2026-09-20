@@ -19,6 +19,7 @@ import {
   formatRatio,
   formatNumber,
 } from '../../utils/formatters';
+import { MetricTooltip } from '../Common/MetricTooltip';
 
 interface PeerBenchmarkingTabProps {
   currentStock: NormalizedStock;
@@ -53,25 +54,25 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
   return (
     <div className="space-y-5">
       {/* 1. Executive Summary & Action Banner */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-3xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2 py-0.5 rounded bg-blue-950/60 border border-blue-800/60 text-blue-300 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#7FA6C9] font-mono text-xs">
                 {benchmarkData.sector} Sector
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-[#8B919C] font-mono">
                 {benchmarkData.industry}
               </span>
-              <span className="text-xs text-slate-500">•</span>
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs text-[#8B919C]">•</span>
+              <span className="text-xs font-mono text-[#8B919C]">
                 {benchmarkData.totalSectorCompanies} Companies in Benchmark Cohort
               </span>
             </div>
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-base font-semibold text-[#E8E9EB]">
               Peer & Industry Benchmarking Analysis
             </h2>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[#8B919C] leading-relaxed">
               {benchmarkData.summary}
             </p>
           </div>
@@ -81,12 +82,12 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
             <button
               id="peer-tab-compare-all-btn"
               onClick={handleCompareAll}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#151922] hover:bg-[#151922]/80 text-[#E8E9EB] border border-[#252A33] text-xs font-medium transition"
             >
-              <Scale className="w-4 h-4" />
+              <Scale className="w-4 h-4 text-[#7FA6C9]" />
               <span>Compare with 4 Peers in Matrix</span>
             </button>
-            <p className="text-[11px] text-slate-500 font-mono text-center">
+            <p className="text-[11px] text-[#8B919C] font-mono text-center">
               Pulls {peerSymbols.join(', ')} into Side-by-Side
             </p>
           </div>
@@ -94,16 +95,16 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
       </div>
 
       {/* 2. Discovered Competitor Companies Table */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl overflow-hidden shadow-lg">
-        <div className="p-4 border-b border-[#1E2638] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[#252A33] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-400" />
-              <h3 className="text-sm font-semibold text-white">
+              <Users className="w-4 h-4 text-[#7FA6C9]" />
+              <h3 className="text-sm font-semibold text-[#E8E9EB]">
                 Discovered Competitors ({benchmarkData.peerStocks.length} Selected)
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8B919C] mt-0.5">
               Top industry rivals matched by sector ({benchmarkData.sector}) and market exposure ({benchmarkData.country}).
             </p>
           </div>
@@ -111,7 +112,7 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCompareAll}
-              className="text-xs font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
+              className="text-xs font-mono text-[#7FA6C9] hover:underline flex items-center gap-1 transition"
             >
               <span>{allPeersInCompare ? 'Peers active in Compare' : 'Add all to Compare'}</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -122,7 +123,7 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[#1E2638] bg-[#0E131E] text-slate-400 font-mono text-[11px]">
+              <tr className="border-b border-[#252A33] bg-[#0B0D10] text-[#8B919C] font-mono text-[11px]">
                 <th className="py-3 px-3">Company / Ticker</th>
                 <th className="py-3 px-3">Exchange / Country</th>
                 <th className="py-3 px-3 text-right">Price</th>
@@ -135,49 +136,63 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                 <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1A2234]">
+            <tbody className="divide-y divide-[#252A33]">
               {/* Reference Stock Row */}
-              <tr className="bg-blue-950/20 border-b border-blue-900/40">
+              <tr className="bg-[#151922]/40 border-b border-[#252A33]">
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
-                    <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white text-[10px] font-mono font-bold">
+                    <span className="px-1.5 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#7FA6C9] text-[10px] font-mono font-medium">
                       CURRENT
                     </span>
-                    <span className="font-mono font-bold text-white">
+                    <span className="font-mono font-medium text-[#E8E9EB]">
                       {currentStock.symbol}
                     </span>
-                    <span className="text-slate-300 truncate max-w-[160px]">
+                    <span className="text-[#8B919C] truncate max-w-[160px]">
                       {currentStock.companyName}
                     </span>
                   </div>
                 </td>
-                <td className="py-3 px-3 font-mono text-slate-400">
+                <td className="py-3 px-3 font-mono text-[#8B919C]">
                   {currentStock.exchange} • {currentStock.country}
                 </td>
-                <td className="py-3 px-3 text-right font-mono font-semibold text-white">
-                  {formatCurrency(currentStock?.price, currentStock?.currency, false)}
+                <td className="py-3 px-3 text-right font-mono font-medium text-[#E8E9EB]">
+                  <MetricTooltip metricKey="price" value={currentStock?.price} formattedValue={formatCurrency(currentStock?.price, currentStock?.currency, false)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatCurrency(currentStock?.price, currentStock?.currency, false)}</span>
+                  </MetricTooltip>
                 </td>
                 <td className="py-3 px-3 text-right font-mono">
-                  <span className={(currentStock?.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                    {formatPercent(currentStock?.dayChangePercent)}
-                  </span>
+                  <MetricTooltip metricKey="dayChangePercent" value={currentStock?.dayChangePercent} formattedValue={formatPercent(currentStock?.dayChangePercent)} stock={currentStock} className="justify-end w-full">
+                    <span className={(currentStock?.dayChangePercent ?? 0) >= 0 ? 'text-[#6FA58A]' : 'text-[#B87878]'}>
+                      {formatPercent(currentStock?.dayChangePercent)}
+                    </span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-slate-300">
-                  {formatCurrency(currentStock?.marketCap, currentStock?.currency)}
+                <td className="py-3 px-3 text-right font-mono text-[#E8E9EB]">
+                  <MetricTooltip metricKey="marketCap" value={currentStock?.marketCap} formattedValue={formatCurrency(currentStock?.marketCap, currentStock?.currency)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatCurrency(currentStock?.marketCap, currentStock?.currency)}</span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-right font-mono font-bold text-blue-400">
-                  {formatRatio(currentStock.peRatio)}
+                <td className="py-3 px-3 text-right font-mono font-medium text-[#7FA6C9]">
+                  <MetricTooltip metricKey="peRatio" value={currentStock.peRatio} formattedValue={formatRatio(currentStock.peRatio)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatRatio(currentStock.peRatio)}</span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-emerald-400 font-semibold">
-                  {formatPercent(currentStock.returnOnEquity, false)}
+                <td className="py-3 px-3 text-right font-mono text-[#6FA58A] font-medium">
+                  <MetricTooltip metricKey="returnOnEquity" value={currentStock.returnOnEquity} formattedValue={formatPercent(currentStock.returnOnEquity, false)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatPercent(currentStock.returnOnEquity, false)}</span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-slate-300">
-                  {formatPercent(currentStock.netMargin, false)}
+                <td className="py-3 px-3 text-right font-mono text-[#E8E9EB]">
+                  <MetricTooltip metricKey="netMargin" value={currentStock.netMargin} formattedValue={formatPercent(currentStock.netMargin, false)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatPercent(currentStock.netMargin, false)}</span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-slate-300">
-                  {formatRatio(currentStock.debtToEquity)}
+                <td className="py-3 px-3 text-right font-mono text-[#8B919C]">
+                  <MetricTooltip metricKey="debtToEquity" value={currentStock.debtToEquity} formattedValue={formatRatio(currentStock.debtToEquity)} stock={currentStock} className="justify-end w-full">
+                    <span>{formatRatio(currentStock.debtToEquity)}</span>
+                  </MetricTooltip>
                 </td>
-                <td className="py-3 px-3 text-center text-slate-500 font-mono text-[11px]">
+                <td className="py-3 px-3 text-center text-[#8B919C] font-mono text-[11px]">
                   Reference Target
                 </td>
               </tr>
@@ -186,55 +201,69 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
               {benchmarkData.peerStocks.map((peer) => {
                 const isCompared = compareList.includes(peer.symbol);
                 return (
-                  <tr key={peer.symbol} className="hover:bg-[#161D2C] transition">
+                  <tr key={peer.symbol} className="hover:bg-[#151922]/50 transition">
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => onSelectStock(peer.symbol)}
-                          className="font-mono font-bold text-blue-400 hover:underline text-left"
+                          className="font-mono font-semibold text-[#7FA6C9] hover:underline text-left"
                         >
                           {peer.symbol}
                         </button>
-                        <span className="text-slate-300 truncate max-w-[160px]">
+                        <span className="text-[#8B919C] truncate max-w-[160px]">
                           {peer.companyName}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-3 font-mono text-slate-400">
+                    <td className="py-3 px-3 font-mono text-[#8B919C]">
                       {peer.exchange} • {peer.country}
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-medium text-white">
-                      {formatCurrency(peer?.price, peer?.currency, false)}
+                    <td className="py-3 px-3 text-right font-mono font-medium text-[#E8E9EB]">
+                      <MetricTooltip metricKey="price" value={peer?.price} formattedValue={formatCurrency(peer?.price, peer?.currency, false)} stock={peer} className="justify-end w-full">
+                        <span>{formatCurrency(peer?.price, peer?.currency, false)}</span>
+                      </MetricTooltip>
                     </td>
                     <td className="py-3 px-3 text-right font-mono">
-                      <span className={(peer?.dayChangePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                        {formatPercent(peer?.dayChangePercent)}
-                      </span>
+                      <MetricTooltip metricKey="dayChangePercent" value={peer?.dayChangePercent} formattedValue={formatPercent(peer?.dayChangePercent)} stock={peer} className="justify-end w-full">
+                        <span className={(peer?.dayChangePercent ?? 0) >= 0 ? 'text-[#6FA58A]' : 'text-[#B87878]'}>
+                          {formatPercent(peer?.dayChangePercent)}
+                        </span>
+                      </MetricTooltip>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-300">
-                      {formatCurrency(peer?.marketCap, peer?.currency)}
+                    <td className="py-3 px-3 text-right font-mono text-[#8B919C]">
+                      <MetricTooltip metricKey="marketCap" value={peer?.marketCap} formattedValue={formatCurrency(peer?.marketCap, peer?.currency)} stock={peer} className="justify-end w-full">
+                        <span>{formatCurrency(peer?.marketCap, peer?.currency)}</span>
+                      </MetricTooltip>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-200">
-                      {formatRatio(peer.peRatio)}
+                    <td className="py-3 px-3 text-right font-mono text-[#E8E9EB]">
+                      <MetricTooltip metricKey="peRatio" value={peer.peRatio} formattedValue={formatRatio(peer.peRatio)} stock={peer} className="justify-end w-full">
+                        <span>{formatRatio(peer.peRatio)}</span>
+                      </MetricTooltip>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-200">
-                      {formatPercent(peer.returnOnEquity, false)}
+                    <td className="py-3 px-3 text-right font-mono text-[#E8E9EB]">
+                      <MetricTooltip metricKey="returnOnEquity" value={peer.returnOnEquity} formattedValue={formatPercent(peer.returnOnEquity, false)} stock={peer} className="justify-end w-full">
+                        <span>{formatPercent(peer.returnOnEquity, false)}</span>
+                      </MetricTooltip>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-300">
-                      {formatPercent(peer.netMargin, false)}
+                    <td className="py-3 px-3 text-right font-mono text-[#8B919C]">
+                      <MetricTooltip metricKey="netMargin" value={peer.netMargin} formattedValue={formatPercent(peer.netMargin, false)} stock={peer} className="justify-end w-full">
+                        <span>{formatPercent(peer.netMargin, false)}</span>
+                      </MetricTooltip>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-300">
-                      {formatRatio(peer.debtToEquity)}
+                    <td className="py-3 px-3 text-right font-mono text-[#8B919C]">
+                      <MetricTooltip metricKey="debtToEquity" value={peer.debtToEquity} formattedValue={formatRatio(peer.debtToEquity)} stock={peer} className="justify-end w-full">
+                        <span>{formatRatio(peer.debtToEquity)}</span>
+                      </MetricTooltip>
                     </td>
                     <td className="py-3 px-3 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => onToggleCompare(peer.symbol)}
                           title="Toggle Compare"
-                          className={`px-2 py-1 rounded text-xs font-mono transition flex items-center gap-1 ${
+                          className={`px-2 py-1 rounded text-xs font-mono transition flex items-center gap-1 border border-[#252A33] ${
                             isCompared
-                              ? 'bg-blue-600 text-white font-semibold'
-                              : 'bg-[#1A2234] text-slate-300 hover:text-white hover:bg-[#222E44]'
+                              ? 'bg-[#151922] text-[#7FA6C9] font-medium'
+                              : 'bg-[#0B0D10] text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922]'
                           }`}
                         >
                           <Scale className="w-3 h-3" />
@@ -243,7 +272,7 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                         <button
                           onClick={() => onSelectStock(peer.symbol)}
                           title="Inspect Stock Details"
-                          className="px-2 py-1 rounded bg-[#1A2234] text-slate-300 hover:text-blue-400 hover:bg-[#222E44] text-xs font-mono transition"
+                          className="px-2 py-1 rounded bg-[#0B0D10] border border-[#252A33] text-[#8B919C] hover:text-[#7FA6C9] hover:bg-[#151922] text-xs font-mono transition"
                         >
                           Inspect
                         </button>
@@ -258,20 +287,20 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
       </div>
 
       {/* 3. Detailed Sector Percentile Scorecard & Valuation Gauges */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E2638] pb-3">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#252A33] pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-blue-400" />
-              <h3 className="text-sm font-semibold text-white">
+              <Award className="w-4 h-4 text-[#7FA6C9]" />
+              <h3 className="text-sm font-semibold text-[#E8E9EB]">
                 Sector Percentile Rankings & Valuation Cones
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8B919C] mt-0.5">
               Evaluates where {currentStock.companyName} sits compared to {benchmarkData.totalSectorCompanies} sector peers.
             </p>
           </div>
-          <span className="text-xs font-mono text-slate-400 bg-[#151B28] px-2.5 py-1 rounded border border-[#1E2638]">
+          <span className="text-xs font-mono text-[#8B919C] bg-[#151922] px-2.5 py-1 rounded border border-[#252A33]">
             Cohort: {benchmarkData.sector}
           </span>
         </div>
@@ -283,24 +312,24 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
             return (
               <div
                 key={rank.metricKey}
-                className="bg-[#0E131E] border border-[#1A2234] rounded-xl p-4 space-y-3"
+                className="bg-[#0B0D10] border border-[#252A33] rounded-xl p-4 space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[11px] font-mono text-[#8B919C] uppercase tracking-wider block">
                       {rank.metricLabel}
                     </span>
-                    <h4 className="text-sm font-semibold text-white mt-0.5">
+                    <h4 className="text-sm font-medium text-[#E8E9EB] mt-0.5">
                       {rank.headline}
                     </h4>
                   </div>
                   <span
-                    className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                    className={`text-xs font-mono font-medium px-2 py-0.5 rounded-full shrink-0 border border-[#252A33] ${
                       isPos
-                        ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/60'
+                        ? 'bg-[#151922] text-[#6FA58A]'
                         : isCaut
-                        ? 'bg-amber-950/60 text-amber-300 border border-amber-800/60'
-                        : 'bg-blue-950/60 text-blue-300 border border-blue-800/60'
+                        ? 'bg-[#151922] text-[#B8A36A]'
+                        : 'bg-[#151922] text-[#7FA6C9]'
                     }`}
                   >
                     {rank.isHigherBetter
@@ -310,10 +339,10 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                 </div>
 
                 {/* Number Comparison */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[#141A26] p-2.5 rounded-lg border border-[#1E2638]">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[#151922] p-2.5 rounded-lg border border-[#252A33]">
                   <div>
-                    <span className="text-slate-500 block text-[10px]">COMPANY VALUE</span>
-                    <span className="text-white font-bold text-sm">
+                    <span className="text-[#8B919C] block text-[10px]">COMPANY VALUE</span>
+                    <span className="text-[#E8E9EB] font-semibold text-sm">
                       {rank.stockValue !== null ? rank.stockValue.toFixed(1) : '—'}
                       {rank.metricKey.includes('Margin') || rank.metricKey.includes('Growth') || rank.metricKey.includes('Equity')
                         ? '%'
@@ -323,8 +352,8 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">SECTOR MEDIAN</span>
-                    <span className="text-slate-300 font-bold text-sm">
+                    <span className="text-[#8B919C] block text-[10px]">SECTOR MEDIAN</span>
+                    <span className="text-[#8B919C] font-semibold text-sm">
                       {rank.sectorMedian !== null ? rank.sectorMedian.toFixed(1) : '—'}
                       {rank.metricKey.includes('Margin') || rank.metricKey.includes('Growth') || rank.metricKey.includes('Equity')
                         ? '%'
@@ -338,29 +367,29 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
                 {/* Percentile visual meter */}
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-[11px] font-mono">
-                    <span className="text-slate-400">Percentile Rank</span>
-                    <span className="text-slate-200 font-semibold">{rank.percentile}%</span>
+                    <span className="text-[#8B919C]">Percentile Rank</span>
+                    <span className="text-[#E8E9EB] font-medium">{rank.percentile}%</span>
                   </div>
-                  <div className="w-full bg-[#1A2234] h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#151922] h-2 rounded-full overflow-hidden border border-[#252A33]">
                     <div
                       className={`h-full rounded-full transition-all ${
                         isPos
-                          ? 'bg-emerald-500'
+                          ? 'bg-[#6FA58A]'
                           : isCaut
-                          ? 'bg-amber-500'
-                          : 'bg-blue-500'
+                          ? 'bg-[#B8A36A]'
+                          : 'bg-[#7FA6C9]'
                       }`}
                       style={{ width: `${Math.min(100, Math.max(4, rank.percentile))}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <div className="flex justify-between text-[10px] text-[#8B919C] font-mono">
                     <span>Laggards (0%)</span>
                     <span>Median (50%)</span>
                     <span>Leaders (100%)</span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+                <p className="text-[11px] text-[#8B919C] leading-relaxed font-sans">
                   {rank.detail}
                 </p>
               </div>
@@ -369,45 +398,128 @@ export const PeerBenchmarkingTab: React.FC<PeerBenchmarkingTabProps> = ({
         </div>
       </div>
 
-      {/* 4. Sector Medians Summary Card */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg">
-        <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider mb-3">
+      {/* 4. Institutional Sector Distribution Matrix Table */}
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#252A33]">
+          <div>
+            <h3 className="text-xs font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider">
+              Sector Relative Distribution & Percentile Matrix
+            </h3>
+            <p className="text-xs text-[#8B919C] mt-0.5">
+              Horizontal dispersion mapping comparing {currentStock.symbol} directly against {benchmarkData.sector} peers.
+            </p>
+          </div>
+          <span className="text-[11px] font-mono text-[#8B919C]">
+            {benchmarkData.totalSectorCompanies} Peers Analyzed
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead>
+              <tr className="text-[#8B919C] border-b border-[#252A33] text-[11px]">
+                <th className="py-2.5 px-3 font-semibold">Fundamental Metric</th>
+                <th className="py-2.5 px-3 text-right font-semibold">{currentStock.symbol} Value</th>
+                <th className="py-2.5 px-3 text-right font-semibold">Sector Median</th>
+                <th className="py-2.5 px-4 font-semibold text-center w-48">Percentile Distribution (0% to 100%)</th>
+                <th className="py-2.5 px-3 text-right font-semibold">Sector Rank</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#252A33]">
+              {benchmarkData.percentileRanks.map((rank) => {
+                const pct = Math.min(100, Math.max(0, rank.percentile));
+                return (
+                  <tr key={rank.metricKey} className="hover:bg-[#151922]/50 transition">
+                    <td className="py-3 px-3 font-medium text-[#E8E9EB]">
+                      {rank.metricLabel}
+                    </td>
+                    <td className="py-3 px-3 text-right font-medium text-[#E8E9EB]">
+                      {rank.stockValue !== null ? rank.stockValue.toFixed(1) : '—'}
+                      {rank.metricKey.includes('Margin') || rank.metricKey.includes('Growth') || rank.metricKey.includes('Equity')
+                        ? '%'
+                        : rank.metricKey.includes('peRatio')
+                        ? 'x'
+                        : ''}
+                    </td>
+                    <td className="py-3 px-3 text-right text-[#8B919C]">
+                      {rank.sectorMedian !== null ? rank.sectorMedian.toFixed(1) : '—'}
+                      {rank.metricKey.includes('Margin') || rank.metricKey.includes('Growth') || rank.metricKey.includes('Equity')
+                        ? '%'
+                        : rank.metricKey.includes('peRatio')
+                        ? 'x'
+                        : ''}
+                    </td>
+                    <td className="py-3 px-4">
+                      {/* Visual Dispersion Slider with Sector Median marker (50%) and Stock Dot */}
+                      <div className="relative w-full h-4 flex items-center">
+                        {/* Track */}
+                        <div className="w-full h-1.5 bg-[#151922] rounded-full relative overflow-visible border border-[#252A33]">
+                          {/* 50% Median Line */}
+                          <div className="absolute top-[-3px] bottom-[-3px] left-1/2 w-0.5 bg-[#8B919C] z-0" title="Sector Median (50%)" />
+                          {/* Stock Percentile Marker Dot */}
+                          <div
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#E8E9EB] border border-[#7FA6C9] z-10 shadow-sm"
+                            style={{ left: `${pct}%` }}
+                            title={`${rank.percentile}th Percentile`}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className="font-medium text-[#E8E9EB]">
+                        #{rank.rank}
+                      </span>
+                      <span className="text-[#8B919C] text-[10px]">
+                        {' '}/ {rank.totalCompared}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 5. Sector Medians Summary Card */}
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
+        <h3 className="text-xs font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider mb-3">
           {benchmarkData.sector} Sector Multiples & Benchmark Medians
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono text-xs">
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">MEDIAN P/E (TTM)</span>
-            <span className="text-white font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">MEDIAN P/E (TTM)</span>
+            <span className="text-[#E8E9EB] font-medium text-sm mt-0.5 block">
               {formatRatio(benchmarkData.sectorMedianMetrics.peRatio)}
             </span>
           </div>
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">MEDIAN ROE</span>
-            <span className="text-emerald-400 font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">MEDIAN ROE</span>
+            <span className="text-[#6FA58A] font-medium text-sm mt-0.5 block">
               {formatPercent(benchmarkData.sectorMedianMetrics.returnOnEquity, false)}
             </span>
           </div>
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">MEDIAN NET MARGIN</span>
-            <span className="text-white font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">MEDIAN NET MARGIN</span>
+            <span className="text-[#E8E9EB] font-medium text-sm mt-0.5 block">
               {formatPercent(benchmarkData.sectorMedianMetrics.netMargin, false)}
             </span>
           </div>
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">REV GROWTH</span>
-            <span className="text-white font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">REV GROWTH</span>
+            <span className="text-[#E8E9EB] font-medium text-sm mt-0.5 block">
               {formatPercent(benchmarkData.sectorMedianMetrics.revenueGrowth, false)}
             </span>
           </div>
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">DEBT TO EQUITY</span>
-            <span className="text-white font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">DEBT TO EQUITY</span>
+            <span className="text-[#8B919C] font-medium text-sm mt-0.5 block">
               {formatRatio(benchmarkData.sectorMedianMetrics.debtToEquity)}
             </span>
           </div>
-          <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-            <span className="text-slate-500 block text-[10px]">FCF MARGIN</span>
-            <span className="text-white font-bold text-sm mt-0.5 block">
+          <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+            <span className="text-[#8B919C] block text-[10px]">FCF MARGIN</span>
+            <span className="text-[#E8E9EB] font-medium text-sm mt-0.5 block">
               {formatPercent(benchmarkData.sectorMedianMetrics.fcfMargin, false)}
             </span>
           </div>

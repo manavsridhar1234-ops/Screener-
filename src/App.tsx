@@ -9,8 +9,10 @@ import { StockDetailView } from './components/StockDetail/StockDetailView';
 import { CompareView } from './components/Compare/CompareView';
 import { WatchlistView } from './components/Watchlist/WatchlistView';
 import { AddStockModal } from './components/Screener/AddStockModal';
+import { CommandPaletteModal } from './components/Navigation/CommandPaletteModal';
 import { FooterDataSources } from './components/Common/FooterDataSources';
 import { refreshUniverseData, fetchScreenerStocks } from './services/api';
+import type { NormalizedStock } from './types';
 import {
   TrendingUp,
   ShieldCheck,
@@ -26,22 +28,39 @@ function AppContent() {
   const [selectedStockSymbol, setSelectedStockSymbol] = useState<string>('MSFT');
   const [compareList, setCompareList] = useState<string[]>(['MSFT', 'SHAKTIPUMP.NS']);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [universeCount, setUniverseCount] = useState<number>(38);
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(new Date().toLocaleTimeString());
+  const [cachedStocks, setCachedStocks] = useState<NormalizedStock[]>([]);
 
-  // Load initial universe stats
+  // Load initial universe stats & cached stocks for quick search
   useEffect(() => {
     if (!isAuthenticated) return;
-    fetchScreenerStocks({}, 'marketCap', 'desc', 1, 1)
+    fetchScreenerStocks({}, 'marketCap', 'desc', 1, 50)
       .then((res) => {
         setUniverseCount(res.universeCount || res.total || 38);
+        if (res.stocks) {
+          setCachedStocks(res.stocks);
+        }
         if (res.lastUpdated) {
           setLastUpdatedTime(new Date(res.lastUpdated).toLocaleTimeString());
         }
       })
       .catch(() => {});
   }, [isAuthenticated]);
+
+  // Global keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   if (!isAuthenticated) {
     return <LoginView />;
@@ -96,7 +115,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#0B0D10] text-[#E8E9EB] flex flex-col font-sans selection:bg-[#7FA6C9]/25 selection:text-[#E8E9EB]">
       {/* Top Header */}
       <Navbar
         activeTab={activeTab}
@@ -109,6 +128,7 @@ function AppContent() {
         isRefreshing={isRefreshing}
         universeCount={universeCount}
         lastUpdatedTime={lastUpdatedTime}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -162,6 +182,15 @@ function AppContent() {
           setUniverseCount((prev) => prev + 1);
           handleSelectStock(stock.symbol);
         }}
+      />
+
+      {/* Global Command Palette (⌘K) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onSelectStock={handleSelectStock}
+        onNavigate={(view) => setActiveTab(view)}
+        stocksList={cachedStocks}
       />
 
       {/* Institutional Terminal Footer & Data Sources Attribution */}

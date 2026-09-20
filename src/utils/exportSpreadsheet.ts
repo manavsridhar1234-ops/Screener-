@@ -155,3 +155,84 @@ export function exportStockModelToCsv(
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+export function exportScreenerToCsv(stocks: NormalizedStock[]): void {
+  const rows: (string | number)[][] = [];
+
+  rows.push(['EQUITYLENS RESEARCH TERMINAL — SCREENER UNIVERSE EXPORT']);
+  rows.push(['Export Timestamp', new Date().toISOString()]);
+  rows.push(['Total Filtered Records', stocks.length]);
+  rows.push([]);
+
+  // Column Headers
+  rows.push([
+    'Symbol',
+    'Company Name',
+    'Exchange',
+    'Sector',
+    'Industry',
+    'Currency',
+    'Price',
+    'Day Change %',
+    'Market Cap',
+    'Enterprise Value',
+    'Trailing P/E',
+    'Forward P/E',
+    'EV/EBITDA',
+    'Price to Sales (P/S)',
+    'Price to Book (P/B)',
+    'ROE %',
+    'ROIC %',
+    'Operating Margin %',
+    'Net Margin %',
+    'Debt to Equity %',
+    'Dividend Yield %',
+    'Free Cash Flow',
+    '52-Week High',
+    '52-Week Low',
+    'Volume',
+  ]);
+
+  stocks.forEach((s) => {
+    rows.push([
+      s.symbol,
+      s.companyName,
+      s.exchange,
+      s.sector || '—',
+      s.industry || '—',
+      s.currency,
+      s.price !== null ? s.price.toFixed(2) : '—',
+      s.dayChangePercent !== null ? `${s.dayChangePercent.toFixed(2)}%` : '—',
+      formatRawOrDash(s.marketCap),
+      formatRawOrDash(s.enterpriseValue),
+      s.peRatio !== null ? s.peRatio.toFixed(2) : '—',
+      s.forwardPe !== null ? s.forwardPe.toFixed(2) : '—',
+      s.evToEbitda !== null ? s.evToEbitda.toFixed(2) : '—',
+      s.priceToSales !== null ? s.priceToSales.toFixed(2) : '—',
+      s.priceToBook !== null ? s.priceToBook.toFixed(2) : '—',
+      s.returnOnEquity !== null ? `${(s.returnOnEquity * 100).toFixed(2)}%` : '—',
+      s.returnOnInvestedCapital !== null && s.returnOnInvestedCapital !== undefined ? `${(s.returnOnInvestedCapital * 100).toFixed(2)}%` : '—',
+      s.operatingMargin !== null ? `${(s.operatingMargin * 100).toFixed(2)}%` : '—',
+      s.netMargin !== null ? `${(s.netMargin * 100).toFixed(2)}%` : '—',
+      s.debtToEquity !== null ? `${(s.debtToEquity * 100).toFixed(2)}%` : '—',
+      s.dividendYield !== null ? `${(s.dividendYield * 100).toFixed(2)}%` : '—',
+      formatRawOrDash(s.freeCashFlow),
+      s.fiftyTwoWeekHigh !== null ? s.fiftyTwoWeekHigh.toFixed(2) : '—',
+      s.fiftyTwoWeekLow !== null ? s.fiftyTwoWeekLow.toFixed(2) : '—',
+      s.volume ? s.volume : '—',
+    ]);
+  });
+
+  const csvContent = '\uFEFF' + rows.map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  const safeDate = new Date().toISOString().split('T')[0];
+  link.setAttribute('href', url);
+  link.setAttribute('download', `EquityLens_Screener_Universe_${safeDate}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

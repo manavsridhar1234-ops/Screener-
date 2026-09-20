@@ -186,8 +186,12 @@ export function normalizeStockData(raw: any, symbol: string): NormalizedStock {
     returnOnInvestedCapital: null, // not natively reported, kept null per rule 9
     dayChange: price.regularMarketChange ?? null,
     dayChangePercent: price.regularMarketChangePercent !== undefined && price.regularMarketChangePercent !== null
-      ? price.regularMarketChangePercent
-      : null,
+      ? (Math.abs(price.regularMarketChangePercent) <= 1 && price.regularMarketChangePercent !== 0
+          ? price.regularMarketChangePercent * 100
+          : price.regularMarketChangePercent)
+      : (price.regularMarketChange && currentPrice && currentPrice > price.regularMarketChange
+          ? (price.regularMarketChange / (currentPrice - price.regularMarketChange)) * 100
+          : null),
     fiftyTwoWeekHigh,
     fiftyTwoWeekLow,
     distFrom52wHigh,

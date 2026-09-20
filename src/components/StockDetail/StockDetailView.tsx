@@ -25,7 +25,6 @@ import {
   HelpCircle,
   Bot,
   FileText,
-  Printer,
 } from 'lucide-react';
 import type {
   NormalizedStock,
@@ -58,6 +57,13 @@ import { StockAiChat } from './StockAiChat';
 import { MetricExplainerModal } from '../MetricExplainer/MetricExplainerModal';
 import { InvestmentMemoModal } from './InvestmentMemoModal';
 import { ClickableMetric } from '../Common/ClickableMetric';
+import { MetricTooltip } from '../Common/MetricTooltip';
+import { ResearchSnapshot } from './ResearchSnapshot';
+import { QualityScorecardSection } from './QualityScorecardSection';
+import { HistoricalValuationSection } from './HistoricalValuationSection';
+import { FinancialAnomaliesSection } from './FinancialAnomaliesSection';
+import { ExplainMoveModal } from './ExplainMoveModal';
+import { ThesisBuilderModal } from './ThesisBuilderModal';
 
 interface StockDetailViewProps {
   symbol: string;
@@ -87,13 +93,15 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   const [growthSeries, setGrowthSeries] = useState<FinancialGrowthPoint[]>([]);
 
   const [chartRange, setChartRange] = useState<'1d' | '5d' | '1m' | '6m' | '1y' | '5y'>('1y');
-  const [activeTab, setActiveTab] = useState<'overview' | 'growth' | 'peers' | 'financials' | 'integrity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'scorecard' | 'valuation' | 'growth' | 'peers' | 'financials' | 'integrity'>('overview');
   const [activeStatementTab, setActiveStatementTab] = useState<'is' | 'bs' | 'cf'>('is');
   const [benchmarkData, setBenchmarkData] = useState<PeerBenchmarkData | null>(null);
 
-  // AI Chat & Metric Explainer states
+  // Modals & Panels
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isMemoOpen, setIsMemoOpen] = useState(false);
+  const [isExplainMoveOpen, setIsExplainMoveOpen] = useState(false);
+  const [isThesisBuilderOpen, setIsThesisBuilderOpen] = useState(false);
   const [aiInitialQuestion, setAiInitialQuestion] = useState<string | null>(null);
 
   const [explainerMetric, setExplainerMetric] = useState<MetricDefinition | null>(null);
@@ -182,29 +190,29 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-12 text-center flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-        <p className="text-xs text-slate-400 font-mono">Fetching normalized fundamentals for {symbol}...</p>
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-12 text-center flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#7FA6C9] border-t-transparent animate-spin" />
+        <p className="text-xs text-[#8B919C] font-mono">Fetching normalized fundamentals for {symbol}...</p>
       </div>
     );
   }
 
   if (errorMsg || !stock) {
     return (
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-12 text-center max-w-xl mx-auto space-y-4">
-        <div className="w-12 h-12 rounded-full bg-rose-950/40 text-rose-400 flex items-center justify-center mx-auto">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-12 text-center max-w-xl mx-auto space-y-4">
+        <div className="w-12 h-12 rounded-full bg-[#151922] border border-[#252A33] text-[#B87878] flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-semibold text-white">Stock Data Unavailable</h3>
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <h3 className="text-base font-semibold text-[#E8E9EB]">Stock Data Unavailable</h3>
+        <p className="text-xs text-[#8B919C] leading-relaxed">
           {errorMsg || `Could not find fundamental or market quote records for ticker "${symbol}".`}
         </p>
-        <p className="text-xs text-slate-500 font-mono">
-          For Indian NSE equities, verify the suffix is <code className="text-blue-400">.NS</code> (e.g. SHAKTIPUMP.NS, RELIANCE.NS).
+        <p className="text-xs text-[#8B919C] font-mono">
+          For Indian NSE equities, verify the suffix is <code className="text-[#7FA6C9]">.NS</code> (e.g. SHAKTIPUMP.NS, RELIANCE.NS).
         </p>
         <button
           onClick={() => onSelectStock('MSFT')}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#151922] hover:bg-[#151922]/80 text-[#E8E9EB] border border-[#252A33] text-xs font-medium transition"
         >
           View Microsoft (MSFT)
         </button>
@@ -213,15 +221,26 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   }
 
   // 52-week position calculation
-  const high52 = stock.week52High || 0;
-  const low52 = stock.week52Low || 0;
+  const high52 = stock.fiftyTwoWeekHigh ?? (stock as any).week52High ?? 0;
+  const low52 = stock.fiftyTwoWeekLow ?? (stock as any).week52Low ?? 0;
   const currPrice = stock.price || 0;
   let rangePercent = 50;
   if (high52 > low52 && currPrice >= low52) {
     rangePercent = Math.min(100, Math.max(0, ((currPrice - low52) / (high52 - low52)) * 100));
   }
 
-  const isPositive = (stock.dayChangePercent ?? 0) >= 0;
+  // Normalized day change percentage (guard against raw decimal fraction e.g. -0.0196)
+  const rawDayPercent = stock.dayChangePercent;
+  let displayDayPercent: number | null = rawDayPercent;
+  if (rawDayPercent !== null && rawDayPercent !== undefined) {
+    if (Math.abs(rawDayPercent) <= 0.25 && stock.dayChange && stock.price && Math.abs(stock.dayChange / stock.price) > 0.002) {
+      displayDayPercent = (stock.dayChange / (stock.price - stock.dayChange)) * 100;
+    } else if (Math.abs(rawDayPercent) <= 0.1 && rawDayPercent !== 0) {
+      displayDayPercent = rawDayPercent * 100;
+    }
+  }
+
+  const isPositive = (displayDayPercent ?? stock.dayChangePercent ?? 0) >= 0;
   const isCompared = compareList.includes(stock.symbol);
 
   // SVG Chart rendering
@@ -246,194 +265,232 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. Header Card */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
+        {/* Top Row: Company Info & Live Price */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-mono font-bold text-2xl text-white tracking-wider">
+              <span className="font-mono font-bold text-2xl text-[#E8E9EB] tracking-wider">
                 {stock.symbol}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded bg-[#1A2234] border border-[#243048] text-slate-300 font-mono">
+              <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] font-mono whitespace-nowrap">
                 {stock.exchange}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded bg-blue-950/60 border border-blue-800/60 text-blue-300 font-sans">
+              <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#7FA6C9] font-sans whitespace-nowrap">
                 {stock.country}
               </span>
               {stock.currency && (
-                <span className="text-xs px-2 py-0.5 rounded bg-[#1A2234] text-slate-400 font-mono">
+                <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] font-mono whitespace-nowrap">
                   {stock.currency}
                 </span>
               )}
             </div>
 
-            <h1 className="text-base font-semibold text-slate-200 mt-1">
+            <h1 className="text-base font-semibold text-[#E8E9EB] mt-1">
               {stock.companyName}
             </h1>
 
-            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1.5 flex-wrap">
-              <span>{stock.sector || 'General Sector'}</span>
+            <div className="flex items-center gap-2 text-xs text-[#8B919C] mt-1.5 flex-wrap">
+              <span className="whitespace-nowrap">{stock.sector || 'General Sector'}</span>
               <span>•</span>
-              <span>{stock.industry || 'General Industry'}</span>
+              <span className="whitespace-nowrap">{stock.industry || 'General Industry'}</span>
               {stock.employees && (
                 <>
                   <span>•</span>
-                  <span>{stock.employees.toLocaleString()} employees</span>
+                  <span className="whitespace-nowrap">{stock.employees.toLocaleString()} employees</span>
                 </>
               )}
             </div>
           </div>
 
-          {/* Action buttons & Live Price */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:items-end">
-            <div className="text-left sm:text-right">
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono font-bold text-3xl text-white">
-                  {formatCurrency(stock.price, stock.currency, false)}
-                </span>
+          {/* Live Price Block */}
+          <div className="text-left md:text-right shrink-0">
+            <div className="flex items-baseline gap-2.5 md:justify-end">
+              <span className="font-mono font-semibold text-3xl text-[#E8E9EB]">
+                {formatCurrency(stock.price, stock.currency, false)}
+              </span>
+              <MetricTooltip
+                metricKey="dayChangePercent"
+                value={displayDayPercent}
+                formattedValue={`${isPositive ? '+' : ''}${formatPercent(displayDayPercent)}`}
+                stock={stock}
+              >
                 <span
-                  className={`font-mono text-sm font-semibold flex items-center gap-0.5 ${
-                    isPositive ? 'text-emerald-400' : 'text-rose-400'
+                  className={`font-mono text-sm font-medium flex items-center gap-1 ${
+                    isPositive ? 'text-[#6FA58A]' : 'text-[#B87878]'
                   }`}
                 >
                   {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  {formatPercent(stock.dayChangePercent)}
+                  {formatPercent(displayDayPercent)}
                   <span className="text-xs opacity-75">
                     ({stock.dayChange && stock.dayChange > 0 ? '+' : ''}
                     {stock.dayChange?.toFixed(2)})
                   </span>
                 </span>
-              </div>
-              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                Market Cap: {formatCurrency(stock.marketCap, stock.currency)}
-              </div>
+              </MetricTooltip>
             </div>
-
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-              {/* Ask AI Analyst Button */}
-              <button
-                id="ask-stock-ai-action-btn"
-                onClick={() => setIsAiChatOpen(true)}
-                title="Ask the in-house AI Analyst anything about this stock"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-200 text-slate-900 shadow-md transition-all cursor-pointer"
+            <div className="text-[11px] text-[#8B919C] font-mono mt-0.5">
+              <MetricTooltip
+                metricKey="marketCap"
+                value={stock.marketCap}
+                formattedValue={formatCurrency(stock.marketCap, stock.currency)}
+                stock={stock}
+                className="text-[#8B919C] hover:text-[#E8E9EB]"
               >
-                <Sparkles className="w-4 h-4 text-slate-800" />
-                <span>Ask AI Analyst</span>
-              </button>
-
-              {/* Export Model to Excel / CSV */}
-              <button
-                id="export-model-csv-btn"
-                onClick={() => exportStockModelToCsv(stock, growthSeries, statements)}
-                title="Download 5-Year Financial Statements & Valuation Multiples as CSV/Excel"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#151B28] hover:bg-[#1C2538] text-slate-200 border border-[#222C3E] transition shadow-sm"
-              >
-                <FileSpreadsheet className="w-4 h-4 text-slate-400" />
-                <span className="hidden xl:inline">Export</span>
-                <span>Model (Excel)</span>
-              </button>
-
-              {/* 1-Page Investment Memo / PDF Tearsheet */}
-              <button
-                id="view-investment-memo-btn"
-                onClick={() => setIsMemoOpen(true)}
-                title="Generate printable 1-Page Executive Investment Memo / PDF Tearsheet"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#151B28] hover:bg-[#1C2538] text-slate-200 border border-[#222C3E] transition shadow-sm"
-              >
-                <FileText className="w-4 h-4 text-slate-400" />
-                <span className="hidden xl:inline">1-Page</span>
-                <span>Tearsheet (PDF)</span>
-              </button>
-
-              {benchmarkData && benchmarkData.peerStocks.length > 0 && (
-                <button
-                  id="compare-peers-btn"
-                  onClick={() => {
-                    const peerSyms = benchmarkData.peerStocks.map((p) => p.symbol);
-                    if (onCompareWithPeers) {
-                      onCompareWithPeers(peerSyms);
-                    } else {
-                      peerSyms.forEach((sym) => onToggleCompare(sym));
-                    }
-                  }}
-                  title={`Auto-populate Side-by-Side matrix with ${benchmarkData.peerStocks.map((p) => p.symbol).join(', ')}`}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white transition shadow-sm"
-                >
-                  <Users className="w-4 h-4 text-slate-400" />
-                  <span>Peers</span>
-                  <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-full font-mono border border-slate-700">
-                    {benchmarkData.peerStocks.length}
-                  </span>
-                </button>
-              )}
-
-              <button
-                id="toggle-watchlist-btn"
-                onClick={() => toggleWatchlist(stock.symbol)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
-                  isInWatchlist(stock.symbol)
-                    ? 'bg-slate-800 text-white border-slate-600'
-                    : 'bg-[#151B28] text-slate-300 border-[#1E2638] hover:bg-[#1A2234]'
-                }`}
-              >
-                <Star
-                  className={`w-4 h-4 ${
-                    isInWatchlist(stock.symbol) ? 'fill-white text-white' : 'text-slate-400'
-                  }`}
-                />
-                <span>{isInWatchlist(stock.symbol) ? 'Watching' : 'Watchlist'}</span>
-              </button>
-
-              <button
-                id="toggle-compare-btn"
-                onClick={() => onToggleCompare(stock.symbol)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
-                  isCompared
-                    ? 'bg-slate-800 text-white border-slate-600 shadow-sm'
-                    : 'bg-[#151B28] text-slate-300 border-[#1E2638] hover:bg-[#1A2234]'
-                }`}
-              >
-                <Scale className="w-4 h-4" />
-                <span>{isCompared ? 'Compared' : 'Compare'}</span>
-              </button>
+                Market Cap: {formatCurrency(stock.marketCap, stock.currency)}
+              </MetricTooltip>
             </div>
           </div>
         </div>
 
-        {/* 52-Week Range Bar */}
-        <div className="mt-5 pt-4 border-t border-[#1E2638]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-1.5">
-            <span>52W Low: {formatCurrency(stock.week52Low, stock.currency, false)}</span>
-            <span className="text-slate-200 font-semibold">52-Week Price Range</span>
-            <span>52W High: {formatCurrency(stock.week52High, stock.currency, false)}</span>
+        {/* Action Toolbar */}
+        <div className="mt-4 pt-3.5 border-t border-[#252A33] flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Ask AI Analyst Button */}
+            <button
+              id="ask-stock-ai-action-btn"
+              onClick={() => setIsAiChatOpen(true)}
+              title="Ask the in-house AI Analyst anything about this stock"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] text-[#E8E9EB] shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#7FA6C9]" />
+              <span>Ask AI Analyst</span>
+            </button>
+
+            {/* 1-Page Investment Memo / PDF Tearsheet */}
+            <button
+              id="view-investment-memo-btn"
+              onClick={() => setIsMemoOpen(true)}
+              title="Generate printable 1-Page Executive Investment Memo / PDF Tearsheet"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#E8E9EB] hover:bg-[#151922]/80 transition shadow-sm whitespace-nowrap shrink-0"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#7FA6C9]" />
+              <span>1-Page Memo</span>
+            </button>
+
+            {/* Export Model to Excel / CSV */}
+            <button
+              id="export-model-excel-btn"
+              onClick={() => exportStockModelToCsv(stock, growthSeries, statements)}
+              title="Export complete 5-year financial model, valuation multiples, and statement data to Excel / CSV"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#8B919C] hover:bg-[#151922]/80 hover:text-[#E8E9EB] transition shadow-sm whitespace-nowrap shrink-0"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#6FA58A]" />
+              <span>Export Model (Excel)</span>
+            </button>
+
+            {benchmarkData && benchmarkData.peerStocks.length > 0 && (
+              <button
+                id="compare-peers-btn"
+                onClick={() => {
+                  const peerSyms = benchmarkData.peerStocks.map((p) => p.symbol);
+                  if (onCompareWithPeers) {
+                    onCompareWithPeers(peerSyms);
+                  } else {
+                    peerSyms.forEach((sym) => onToggleCompare(sym));
+                  }
+                }}
+                title={`Auto-populate Side-by-Side matrix with ${benchmarkData.peerStocks.map((p) => p.symbol).join(', ')}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922]/80 transition shadow-sm whitespace-nowrap shrink-0"
+              >
+                <Users className="w-3.5 h-3.5 text-[#8B919C]" />
+                <span>Peers</span>
+                <span className="text-[10px] bg-[#0B0D10] text-[#7FA6C9] px-1.5 py-0.5 rounded-full font-mono border border-[#252A33]">
+                  {benchmarkData.peerStocks.length}
+                </span>
+              </button>
+            )}
           </div>
-          <div className="relative w-full h-2 rounded-full bg-[#1A2234] overflow-hidden">
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              id="toggle-watchlist-btn"
+              onClick={() => toggleWatchlist(stock.symbol)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
+                isInWatchlist(stock.symbol)
+                  ? 'bg-[#151922] text-[#B8A36A] border-[#B8A36A]/50'
+                  : 'bg-[#151922] text-[#8B919C] border-[#252A33] hover:text-[#E8E9EB] hover:bg-[#151922]/80'
+              }`}
+            >
+              <Star
+                className={`w-3.5 h-3.5 ${
+                  isInWatchlist(stock.symbol) ? 'fill-[#B8A36A] text-[#B8A36A]' : 'text-[#8B919C]'
+                }`}
+              />
+              <span>{isInWatchlist(stock.symbol) ? 'Watching' : 'Watchlist'}</span>
+            </button>
+
+            <button
+              id="toggle-compare-btn"
+              onClick={() => onToggleCompare(stock.symbol)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
+                isCompared
+                  ? 'bg-[#151922] text-[#7FA6C9] border-[#7FA6C9]/50 shadow-sm'
+                  : 'bg-[#151922] text-[#8B919C] border-[#252A33] hover:text-[#E8E9EB] hover:bg-[#151922]/80'
+              }`}
+            >
+              <Scale className="w-3.5 h-3.5" />
+              <span>{isCompared ? 'Compared' : 'Compare'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 52-Week Range Bar */}
+        <div className="mt-5 pt-4 border-t border-[#252A33]">
+          <div className="flex items-center justify-between text-xs font-mono text-[#8B919C] mb-1.5">
+            <MetricTooltip
+              metricKey="fiftyTwoWeekLow"
+              value={stock.fiftyTwoWeekLow ?? (stock as any).week52Low}
+              formattedValue={formatCurrency(stock.fiftyTwoWeekLow ?? (stock as any).week52Low, stock.currency, false)}
+              stock={stock}
+            >
+              <span>52W Low: {formatCurrency(stock.fiftyTwoWeekLow ?? (stock as any).week52Low, stock.currency, false)}</span>
+            </MetricTooltip>
+            <span className="text-[#E8E9EB] font-medium">52-Week Price Range</span>
+            <MetricTooltip
+              metricKey="fiftyTwoWeekHigh"
+              value={stock.fiftyTwoWeekHigh ?? (stock as any).week52High}
+              formattedValue={formatCurrency(stock.fiftyTwoWeekHigh ?? (stock as any).week52High, stock.currency, false)}
+              stock={stock}
+            >
+              <span>52W High: {formatCurrency(stock.fiftyTwoWeekHigh ?? (stock as any).week52High, stock.currency, false)}</span>
+            </MetricTooltip>
+          </div>
+          <div className="relative w-full h-1.5 rounded-full bg-[#151922] border border-[#252A33] overflow-hidden">
             <div
-              className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full"
+              className="absolute top-0 bottom-0 left-0 bg-[#7FA6C9] rounded-full"
               style={{ width: `${rangePercent}%` }}
             />
           </div>
-          <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 mt-1">
-            <span>{stock.distFrom52wHigh !== null ? `${stock.distFrom52wHigh?.toFixed(1)}% from High` : ''}</span>
+          <div className="flex justify-between items-center text-[10px] font-mono text-[#8B919C] mt-1.5">
+            <MetricTooltip
+              metricKey="distFrom52wHigh"
+              value={stock.distFrom52wHigh}
+              formattedValue={stock.distFrom52wHigh !== null && stock.distFrom52wHigh !== undefined ? `${stock.distFrom52wHigh.toFixed(1)}% from High` : ''}
+              stock={stock}
+            >
+              <span>{stock.distFrom52wHigh !== null && stock.distFrom52wHigh !== undefined ? `${stock.distFrom52wHigh.toFixed(1)}% from High` : ''}</span>
+            </MetricTooltip>
             <span>Volume: {stock.volume ? stock.volume.toLocaleString() : '—'}</span>
           </div>
         </div>
 
         {/* Sector Percentile Rankings Badges */}
         {benchmarkData && benchmarkData.percentileRanks.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-[#1E2638]">
+          <div className="mt-4 pt-4 border-t border-[#252A33]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-mono font-medium text-[#E8E9EB] uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-[#7FA6C9]" />
                   Sector Percentile Rankings
                 </span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#1A2234] text-slate-400 border border-[#243048]">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#151922] text-[#8B919C] border border-[#252A33]">
                   vs {benchmarkData.totalSectorCompanies} {benchmarkData.sector} peers
                 </span>
               </div>
               <button
                 onClick={() => setActiveTab('peers')}
-                className="text-[11px] font-mono text-blue-400 hover:text-blue-300 transition flex items-center gap-1"
+                className="text-[11px] font-mono text-[#7FA6C9] hover:text-[#7FA6C9]/80 transition flex items-center gap-1"
               >
                 <span>View Full Peer Matrix & Multiples</span>
                 <ArrowRight className="w-3 h-3" />
@@ -449,25 +506,19 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                   <div
                     key={rank.metricKey}
                     onClick={() => setActiveTab('peers')}
-                    className={`p-2.5 rounded-lg border transition text-xs cursor-pointer hover:border-slate-500 ${
-                      isPos
-                        ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300'
-                        : isCaut
-                        ? 'bg-amber-950/20 border-amber-800/40 text-amber-300'
-                        : 'bg-[#151B28] border-[#1F293D] text-slate-300'
-                    }`}
+                    className="p-2.5 rounded-lg border border-[#252A33] bg-[#151922] hover:border-[#7FA6C9]/50 transition text-xs cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-1.5">
-                      <span className="font-semibold text-white truncate text-[11px]">
+                      <span className="font-medium text-[#E8E9EB] truncate text-[11px]">
                         {rank.headline}
                       </span>
                       <span
-                        className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                        className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded shrink-0 border border-[#252A33] bg-[#0B0D10] ${
                           isPos
-                            ? 'bg-emerald-900/60 text-emerald-200'
+                            ? 'text-[#6FA58A]'
                             : isCaut
-                            ? 'bg-amber-900/60 text-amber-200'
-                            : 'bg-[#1F293D] text-slate-300'
+                            ? 'text-[#B8A36A]'
+                            : 'text-[#8B919C]'
                         }`}
                       >
                         {rank.isHigherBetter
@@ -475,7 +526,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                           : `#${rank.rank}/${rank.totalCompared}`}
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-400 font-mono mt-1 truncate">
+                    <div className="text-[10px] text-[#8B919C] font-mono mt-1 truncate">
                       {rank.detail}
                     </div>
                   </div>
@@ -487,24 +538,24 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
       </div>
 
       {/* 2. Interactive Price Chart Card */}
-      <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg">
+      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-white">Historical Price Action</h2>
+              <h2 className="text-sm font-semibold text-[#E8E9EB]">Historical Price Action</h2>
               {hoveredQuote && (
-                <span className="text-xs font-mono text-slate-300 bg-[#151B28] px-2 py-0.5 rounded border border-[#1E2638]">
-                  {formatDate(hoveredQuote.date)}: <strong className="text-white">{formatCurrency(hoveredQuote.close, stock.currency, false)}</strong>
+                <span className="text-xs font-mono text-[#8B919C] bg-[#151922] px-2 py-0.5 rounded border border-[#252A33]">
+                  {formatDate(hoveredQuote.date)}: <strong className="text-[#E8E9EB]">{formatCurrency(hoveredQuote.close, stock.currency, false)}</strong>
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8B919C] mt-0.5">
               Live market quotes via Yahoo Finance API
             </p>
           </div>
 
           {/* Time range buttons */}
-          <div className="flex items-center gap-1 bg-[#0E131E] p-1 rounded-lg border border-[#1E2638]">
+          <div className="flex items-center gap-1 bg-[#0B0D10] p-1 rounded-lg border border-[#252A33]">
             {(['1d', '5d', '1m', '6m', '1y', '5y'] as const).map((r) => (
               <button
                 key={r}
@@ -512,8 +563,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 onClick={() => setChartRange(r)}
                 className={`px-2.5 py-1 text-xs font-mono uppercase rounded transition ${
                   chartRange === r
-                    ? 'bg-blue-600 text-white font-bold'
-                    : 'text-slate-400 hover:text-white hover:bg-[#182234]'
+                    ? 'bg-[#151922] text-[#E8E9EB] font-semibold border border-[#252A33]'
+                    : 'text-[#8B919C] hover:text-[#E8E9EB]'
                 }`}
               >
                 {r}
@@ -523,14 +574,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </div>
 
         {/* SVG Chart Graphic */}
-        <div className="relative w-full h-[230px] flex items-center justify-center bg-[#0B0E14] rounded-lg border border-[#1A2234] overflow-hidden">
+        <div className="relative w-full h-[230px] flex items-center justify-center bg-[#0B0D10] rounded-lg border border-[#252A33] overflow-hidden">
           {isChartLoading ? (
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-              <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />
+            <div className="flex items-center gap-2 text-xs font-mono text-[#8B919C]">
+              <RefreshCw className="w-4 h-4 animate-spin text-[#7FA6C9]" />
               Loading {chartRange.toUpperCase()} quotes...
             </div>
           ) : historyQuotes.length === 0 ? (
-            <div className="text-xs text-slate-400 font-mono">
+            <div className="text-xs text-[#8B919C] font-mono">
               No historical price quotes available for this time range.
             </div>
           ) : (
@@ -541,8 +592,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             >
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#7FA6C9" stopOpacity="0.14" />
+                  <stop offset="100%" stopColor="#7FA6C9" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -556,8 +607,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 <polyline
                   points={points}
                   fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="2"
+                  stroke="#7FA6C9"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -567,19 +618,51 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Navigation Tabs: Overview, Growth, Peers & Benchmarks, Financial Statements, Data Integrity */}
-      <div className="flex items-center gap-2 border-b border-[#1E2638] pb-1 overflow-x-auto">
+      {/* 3. Navigation Tabs: Overview, Quality Scorecard, Historical Valuation, Growth, Peers, Statements, Data Integrity */}
+      <div className="flex items-center gap-2 border-b border-[#252A33] pb-1 overflow-x-auto">
         <button
           id="detail-tab-overview"
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'overview'
-              ? 'border-sky-500 text-sky-400 bg-[#121622]'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Core Fundamentals & Multiples</span>
+          <span>Institutional Overview</span>
+        </button>
+
+        <button
+          id="detail-tab-scorecard"
+          onClick={() => setActiveTab('scorecard')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+            activeTab === 'scorecard'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Quality Scorecard</span>
+          <span className="px-1.5 py-0.2 rounded bg-[#151922] text-[#6FA58A] border border-[#252A33] font-mono text-[10px]">
+            6 Pillars
+          </span>
+        </button>
+
+        <button
+          id="detail-tab-valuation"
+          onClick={() => setActiveTab('valuation')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+            activeTab === 'valuation'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+          }`}
+        >
+          <CircleDollarSign className="w-3.5 h-3.5" />
+          <span>Historical Valuation</span>
+          <span className="px-1.5 py-0.2 rounded bg-[#151922] text-[#B8A36A] border border-[#252A33] font-mono text-[10px]">
+            5Y Range
+          </span>
         </button>
 
         <button
@@ -587,15 +670,12 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('growth')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'growth'
-              ? 'border-sky-500 text-sky-400 bg-[#121622]'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
           }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>Financial Growth & Cash Flow</span>
-          <span className="px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-300 font-mono text-[10px]">
-            5Y Trend
-          </span>
+          <span>Financial Trends</span>
         </button>
 
         <button
@@ -603,14 +683,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('peers')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'peers'
-              ? 'border-sky-500 text-sky-400 bg-[#121622]'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Peer & Industry Benchmarking</span>
+          <span>Peer Benchmarking</span>
           {benchmarkData && benchmarkData.peerStocks.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-blue-900/60 text-blue-200 font-mono text-[10px]">
+            <span className="px-1.5 py-0.5 rounded-full bg-[#151922] text-[#7FA6C9] border border-[#252A33] font-mono text-[10px]">
               {benchmarkData.peerStocks.length}
             </span>
           )}
@@ -621,12 +701,12 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('financials')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'financials'
-              ? 'border-sky-500 text-sky-400 bg-[#121622]'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
           }`}
         >
           <FileSpreadsheet className="w-3.5 h-3.5" />
-          <span>Annual Financial Statements</span>
+          <span>3-Statement Model</span>
         </button>
 
         <button
@@ -634,14 +714,28 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           onClick={() => setActiveTab('integrity')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'integrity'
-              ? 'border-sky-500 text-sky-400 bg-[#121622]'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
+              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Data Provider & Field Integrity</span>
+          <span>Data Integrity Audit</span>
         </button>
       </div>
+
+      {/* Tab: Quality Scorecard */}
+      {activeTab === 'scorecard' && (
+        <div className="space-y-4">
+          <QualityScorecardSection stock={stock} onMetricClick={handleMetricClick} />
+        </div>
+      )}
+
+      {/* Tab: Historical Valuation */}
+      {activeTab === 'valuation' && (
+        <div className="space-y-4">
+          <HistoricalValuationSection stock={stock} onMetricClick={handleMetricClick} />
+        </div>
+      )}
 
       {/* Tab: Peer Benchmarking & Competitor Discovery */}
       {activeTab === 'peers' && (
@@ -655,9 +749,9 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             onCompareWithPeers={onCompareWithPeers}
           />
         ) : (
-          <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-8 text-center space-y-2">
-            <RefreshCw className="w-5 h-5 text-blue-400 animate-spin mx-auto" />
-            <p className="text-xs text-slate-400 font-mono">
+          <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-8 text-center space-y-2">
+            <RefreshCw className="w-5 h-5 text-[#7FA6C9] animate-spin mx-auto" />
+            <p className="text-xs text-[#8B919C] font-mono">
               Computing automated peer discovery and sector percentile rankings...
             </p>
           </div>
@@ -679,18 +773,26 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
       {/* Tab 1: Core Fundamentals & Multiples */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
+          {/* Executive Institutional Research Snapshot */}
+          <ResearchSnapshot
+            stock={stock}
+            benchmarkData={benchmarkData}
+            onOpenExplainMove={() => setIsExplainMoveOpen(true)}
+            onOpenThesisBuilder={() => setIsThesisBuilderOpen(true)}
+            onNavigateTab={(tab) => setActiveTab(tab as any)}
+          />
+
           {/* Interactive Metric Hint Banner */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#11141A] border border-[#252A33] text-xs text-[#8B919C]">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-sky-400" />
+              <Sparkles className="w-4 h-4 text-[#7FA6C9]" />
               <span>
-                <strong>Interactive Metrics:</strong> Click on any number below to view calculation formulas,{' '}
-                {experienceLevel === 'beginner' ? 'beginner-friendly intuitive summaries' : 'institutional analysis rules'}, or ask AI.
+                <strong className="text-[#E8E9EB]">Interactive Metrics:</strong> Hover over any metric for its institutional interpretation, or click to view calculation models.
               </span>
             </div>
             <button
               onClick={() => setIsAiChatOpen(true)}
-              className="text-sky-400 hover:text-sky-300 font-medium inline-flex items-center gap-1 transition"
+              className="text-[#7FA6C9] hover:text-[#7FA6C9]/80 font-medium inline-flex items-center gap-1 transition"
             >
               <Bot className="w-3.5 h-3.5" />
               <span>Open AI Chat</span>
@@ -699,276 +801,516 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Valuation Multiples */}
-            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-                <CircleDollarSign className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+            <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#252A33]">
+                <CircleDollarSign className="w-4 h-4 text-[#7FA6C9]" />
+                <h3 className="text-xs font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider">
                   Valuation Multiples
                 </h3>
               </div>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Trailing P/E (TTM)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="peRatio"
+                    value={stock.peRatio}
+                    formattedValue={formatRatio(stock.peRatio)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Trailing P/E (TTM)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="peRatio"
                     value={stock.peRatio}
                     formattedValue={formatRatio(stock.peRatio)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-white font-medium"
+                    className="font-mono text-[#E8E9EB] font-medium"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Forward P/E</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="forwardPe"
+                    value={stock.forwardPe}
+                    formattedValue={formatRatio(stock.forwardPe)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Forward P/E
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="forwardPe"
                     value={stock.forwardPe}
                     formattedValue={formatRatio(stock.forwardPe)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Price to Book (P/B)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="priceToBook"
+                    value={stock.priceToBook}
+                    formattedValue={formatRatio(stock.priceToBook)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Price to Book (P/B)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="priceToBook"
                     value={stock.priceToBook}
                     formattedValue={formatRatio(stock.priceToBook)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Price to Sales (P/S)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="priceToSales"
+                    value={stock.priceToSales}
+                    formattedValue={formatRatio(stock.priceToSales)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Price to Sales (P/S)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="priceToSales"
                     value={stock.priceToSales}
                     formattedValue={formatRatio(stock.priceToSales)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Enterprise Value</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="enterpriseValue"
+                    value={stock.enterpriseValue}
+                    formattedValue={formatCurrency(stock.enterpriseValue, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Enterprise Value
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="enterpriseValue"
                     value={stock.enterpriseValue}
                     formattedValue={formatCurrency(stock.enterpriseValue, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">EV / EBITDA</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="evToEbitda"
+                    value={stock.evToEbitda}
+                    formattedValue={formatRatio(stock.evToEbitda)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    EV / EBITDA
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="evToEbitda"
                     value={stock.evToEbitda}
                     formattedValue={formatRatio(stock.evToEbitda)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">EV / Revenue</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="evToRevenue"
+                    value={stock.evToRevenue}
+                    formattedValue={formatRatio(stock.evToRevenue)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    EV / Revenue
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="evToRevenue"
                     value={stock.evToRevenue}
                     formattedValue={formatRatio(stock.evToRevenue)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-400">Dividend Yield</span>
+                  <MetricTooltip
+                    metricKey="dividendYield"
+                    value={stock.dividendYield}
+                    formattedValue={formatPercent(stock.dividendYield, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Dividend Yield
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="dividendYield"
                     value={stock.dividendYield}
                     formattedValue={formatPercent(stock.dividendYield, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-emerald-400 font-medium"
+                    className="font-mono text-[#6FA58A] font-medium"
                   />
                 </div>
               </div>
             </div>
 
             {/* Profitability & Returns */}
-            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-                <Percent className="w-4 h-4 text-blue-400" />
-                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+            <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#252A33]">
+                <Percent className="w-4 h-4 text-[#7FA6C9]" />
+                <h3 className="text-xs font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider">
                   Profitability & Growth
                 </h3>
               </div>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Revenue (TTM)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="revenue"
+                    value={stock.revenue}
+                    formattedValue={formatCurrency(stock.revenue, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Revenue (TTM)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="revenue"
                     value={stock.revenue}
                     formattedValue={formatCurrency(stock.revenue, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-white font-medium"
+                    className="font-mono text-[#E8E9EB] font-medium"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Revenue Growth (YoY)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="revenueGrowth"
+                    value={stock.revenueGrowth}
+                    formattedValue={formatPercent(stock.revenueGrowth)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Revenue Growth (YoY)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="revenueGrowth"
                     value={stock.revenueGrowth}
                     formattedValue={formatPercent(stock.revenueGrowth)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className={`font-mono font-medium ${stock.revenueGrowth && stock.revenueGrowth > 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+                    className={`font-mono font-medium ${stock.revenueGrowth && stock.revenueGrowth > 0 ? 'text-[#6FA58A]' : 'text-[#B87878]'}`}
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Gross Margin</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="grossMargin"
+                    value={stock.grossMargin}
+                    formattedValue={formatPercent(stock.grossMargin, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Gross Margin
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="grossMargin"
                     value={stock.grossMargin}
                     formattedValue={formatPercent(stock.grossMargin, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Operating Margin</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="operatingMargin"
+                    value={stock.operatingMargin}
+                    formattedValue={formatPercent(stock.operatingMargin, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Operating Margin
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="operatingMargin"
                     value={stock.operatingMargin}
                     formattedValue={formatPercent(stock.operatingMargin, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Net Profit Margin</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="netMargin"
+                    value={stock.netMargin}
+                    formattedValue={formatPercent(stock.netMargin, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Net Profit Margin
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="netMargin"
                     value={stock.netMargin}
                     formattedValue={formatPercent(stock.netMargin, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Return on Equity (ROE)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="returnOnEquity"
+                    value={stock.returnOnEquity}
+                    formattedValue={formatPercent(stock.returnOnEquity, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Return on Equity (ROE)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="returnOnEquity"
                     value={stock.returnOnEquity}
                     formattedValue={formatPercent(stock.returnOnEquity, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-emerald-400 font-semibold"
+                    className="font-mono text-[#6FA58A] font-medium"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Return on Assets (ROA)</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="returnOnAssets"
+                    value={stock.returnOnAssets}
+                    formattedValue={formatPercent(stock.returnOnAssets, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Return on Assets (ROA)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="returnOnAssets"
                     value={stock.returnOnAssets}
                     formattedValue={formatPercent(stock.returnOnAssets, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-400">Diluted EPS</span>
+                  <MetricTooltip
+                    metricKey="eps"
+                    value={stock.eps}
+                    formattedValue={stock.eps !== null ? stock.eps?.toFixed(2) : '—'}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Diluted EPS
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="eps"
                     value={stock.eps}
                     formattedValue={stock.eps !== null ? stock.eps?.toFixed(2) : '—'}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-white font-medium"
+                    className="font-mono text-[#E8E9EB] font-medium"
                   />
                 </div>
               </div>
             </div>
 
             {/* Financial Health & Solvency */}
-            <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-[#1E2638]">
-                <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+            <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#252A33]">
+                <ShieldCheck className="w-4 h-4 text-[#7FA6C9]" />
+                <h3 className="text-xs font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider">
                   Financial Health
                 </h3>
               </div>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Total Cash</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="totalCash"
+                    value={stock.totalCash}
+                    formattedValue={formatCurrency(stock.totalCash, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Total Cash
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="totalCash"
                     value={stock.totalCash}
                     formattedValue={formatCurrency(stock.totalCash, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-white font-medium"
+                    className="font-mono text-[#E8E9EB] font-medium"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Total Debt</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="totalDebt"
+                    value={stock.totalDebt}
+                    formattedValue={formatCurrency(stock.totalDebt, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Total Debt
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="totalDebt"
                     value={stock.totalDebt}
                     formattedValue={formatCurrency(stock.totalDebt, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Debt to Equity</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="debtToEquity"
+                    value={stock.debtToEquity}
+                    formattedValue={formatPercent(stock.debtToEquity, false)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Debt to Equity
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="debtToEquity"
                     value={stock.debtToEquity}
                     formattedValue={formatPercent(stock.debtToEquity, false)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Current Ratio</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="currentRatio"
+                    value={stock.currentRatio}
+                    formattedValue={formatRatio(stock.currentRatio, '')}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Current Ratio
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="currentRatio"
                     value={stock.currentRatio}
                     formattedValue={formatRatio(stock.currentRatio, '')}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Quick Ratio</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="quickRatio"
+                    value={stock.quickRatio}
+                    formattedValue={formatRatio(stock.quickRatio, '')}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Quick Ratio
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="quickRatio"
                     value={stock.quickRatio}
                     formattedValue={formatRatio(stock.quickRatio, '')}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Operating Cash Flow</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="operatingCashFlow"
+                    value={stock.operatingCashFlow}
+                    formattedValue={formatCurrency(stock.operatingCashFlow, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Operating Cash Flow
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="operatingCashFlow"
                     value={stock.operatingCashFlow}
                     formattedValue={formatCurrency(stock.operatingCashFlow, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-[#1A2234]">
-                  <span className="text-slate-400">Free Cash Flow</span>
+                <div className="flex justify-between items-center py-1 border-b border-[#252A33]/50">
+                  <MetricTooltip
+                    metricKey="freeCashFlow"
+                    value={stock.freeCashFlow}
+                    formattedValue={formatCurrency(stock.freeCashFlow, stock.currency)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Free Cash Flow
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="freeCashFlow"
                     value={stock.freeCashFlow}
                     formattedValue={formatCurrency(stock.freeCashFlow, stock.currency)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-white font-medium"
+                    className="font-mono text-[#E8E9EB] font-medium"
                   />
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-400">Beta (5Y Monthly)</span>
+                  <MetricTooltip
+                    metricKey="beta"
+                    value={stock.beta}
+                    formattedValue={formatNumber(stock.beta, 2)}
+                    stock={stock}
+                    onMetricClick={handleMetricClick}
+                    className="text-[#8B919C] hover:text-[#E8E9EB] cursor-help"
+                  >
+                    Beta (5Y Monthly)
+                  </MetricTooltip>
                   <ClickableMetric
                     metricKey="beta"
                     value={stock.beta}
                     formattedValue={formatNumber(stock.beta, 2)}
+                    stock={stock}
                     onMetricClick={handleMetricClick}
-                    className="font-mono text-slate-200"
+                    className="font-mono text-[#E8E9EB]"
                   />
                 </div>
               </div>
@@ -989,13 +1331,13 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
 
       {/* Tab 2: Financial Statements */}
       {activeTab === 'financials' && (
-        <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 space-y-4">
+        <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 bg-[#0E131E] p-1 rounded-lg border border-[#1E2638]">
+            <div className="flex items-center gap-1 bg-[#0B0D10] p-1 rounded-lg border border-[#252A33]">
               <button
                 onClick={() => setActiveStatementTab('is')}
                 className={`px-3 py-1 text-xs font-medium rounded transition ${
-                  activeStatementTab === 'is' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                  activeStatementTab === 'is' ? 'bg-[#151922] text-[#E8E9EB] font-semibold border border-[#252A33]' : 'text-[#8B919C] hover:text-[#E8E9EB]'
                 }`}
               >
                 Income Statement
@@ -1003,7 +1345,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               <button
                 onClick={() => setActiveStatementTab('bs')}
                 className={`px-3 py-1 text-xs font-medium rounded transition ${
-                  activeStatementTab === 'bs' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                  activeStatementTab === 'bs' ? 'bg-[#151922] text-[#E8E9EB] font-semibold border border-[#252A33]' : 'text-[#8B919C] hover:text-[#E8E9EB]'
                 }`}
               >
                 Balance Sheet
@@ -1011,14 +1353,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               <button
                 onClick={() => setActiveStatementTab('cf')}
                 className={`px-3 py-1 text-xs font-medium rounded transition ${
-                  activeStatementTab === 'cf' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                  activeStatementTab === 'cf' ? 'bg-[#151922] text-[#E8E9EB] font-semibold border border-[#252A33]' : 'text-[#8B919C] hover:text-[#E8E9EB]'
                 }`}
               >
                 Cash Flow
               </button>
             </div>
 
-            <span className="text-xs font-mono text-slate-400">
+            <span className="text-xs font-mono text-[#8B919C]">
               Reported in {stock.currency}
             </span>
           </div>
@@ -1026,30 +1368,30 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           {/* Statement Table */}
           <div className="overflow-x-auto">
             {statements[activeStatementTab].length === 0 ? (
-              <div className="py-12 text-center text-xs text-slate-400">
+              <div className="py-12 text-center text-xs text-[#8B919C]">
                 Detailed statement line items currently undergoing quarterly consolidation or not reported.
               </div>
             ) : (
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-[#1E2638] text-slate-400 font-mono">
+                  <tr className="border-b border-[#252A33] text-[#8B919C] font-mono">
                     <th className="py-2.5 px-3">Metric / Line Item</th>
                     <th className="py-2.5 px-3">Period</th>
-                    <th className="py-2.5 px-3 text-right font-bold text-white">
+                    <th className="py-2.5 px-3 text-right font-medium text-[#E8E9EB]">
                       Reported Value ({stock.currency})
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A2234] font-mono">
+                <tbody className="divide-y divide-[#252A33]/50 font-mono">
                   {statements[activeStatementTab].map((row, idx) => (
-                    <tr key={idx} className="hover:bg-[#161D2C] transition">
-                      <td className="py-2.5 px-3 text-slate-300 font-sans font-medium">
+                    <tr key={idx} className="hover:bg-[#151922]/60 transition">
+                      <td className="py-2.5 px-3 text-[#E8E9EB] font-sans font-medium">
                         {row.label}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-400">
+                      <td className="py-2.5 px-3 text-[#8B919C]">
                         {row.period}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-slate-200">
+                      <td className="py-2.5 px-3 text-right text-[#E8E9EB]">
                         {formatCurrency(row.value, row.currency || stock.currency)}
                       </td>
                     </tr>
@@ -1063,56 +1405,61 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
 
       {/* Tab 3: Data Provider & Integrity Audit */}
       {activeTab === 'integrity' && (
-        <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white">Market Data Integrity Audit</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Technical honesty report detailing sources, refresh timestamps, and missing-field status.
-            </p>
-          </div>
+        <div className="space-y-4">
+          {/* Automated Fundamental Anomaly & Cross-Check Engine */}
+          <FinancialAnomaliesSection stock={stock} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-              <span className="text-[11px] text-slate-400 block font-mono">PRIMARY DATA PROVIDER</span>
-              <span className="text-xs font-semibold text-white mt-1 block">Yahoo Finance (Server BFF)</span>
+          <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-[#E8E9EB]">Market Data Integrity Audit</h3>
+              <p className="text-xs text-[#8B919C] mt-0.5">
+                Technical honesty report detailing sources, refresh timestamps, and missing-field status.
+              </p>
             </div>
-            <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-              <span className="text-[11px] text-slate-400 block font-mono">LAST NORMALIZED SYNC</span>
-              <span className="text-xs font-semibold text-white mt-1 block font-mono">
-                {new Date(stock.lastUpdated).toLocaleTimeString()}
-              </span>
-            </div>
-            <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-              <span className="text-[11px] text-slate-400 block font-mono">REPORTING CURRENCY</span>
-              <span className="text-xs font-semibold text-white mt-1 block font-mono">{stock.currency}</span>
-            </div>
-            <div className="bg-[#151B28] p-3 rounded-lg border border-[#1F293D]">
-              <span className="text-[11px] text-slate-400 block font-mono">EXCHANGE ROUTE</span>
-              <span className="text-xs font-semibold text-white mt-1 block font-mono">{stock.exchange}</span>
-            </div>
-          </div>
 
-          <div className="bg-[#151B28] p-4 rounded-lg border border-[#1F293D] space-y-2 text-xs">
-            <span className="font-semibold text-white block">Field Resolution & Missing Data Policy:</span>
-            <ul className="list-disc list-inside space-y-1 text-slate-400 leading-relaxed">
-              <li>
-                <strong className="text-slate-300">Technical Honesty:</strong> When fundamental fields are not disclosed by the company or not applicable (such as commercial banks without traditional gross inventory or industrial debt ratios), the application presents <code className="text-blue-400">"—"</code> rather than substituting false zero values.
-              </li>
-              <li>
-                <strong className="text-slate-300">Resilient Architecture:</strong> Unlike the legacy EODHD endpoints that failed with HTTP 403/404, the new Node backend service isolates errors gracefully and retains 15-minute cached records.
-              </li>
-            </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+                <span className="text-[11px] text-[#8B919C] block font-mono">PRIMARY DATA PROVIDER</span>
+                <span className="text-xs font-medium text-[#E8E9EB] mt-1 block">Yahoo Finance (Server BFF)</span>
+              </div>
+              <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+                <span className="text-[11px] text-[#8B919C] block font-mono">LAST NORMALIZED SYNC</span>
+                <span className="text-xs font-medium text-[#E8E9EB] mt-1 block font-mono">
+                  {new Date(stock.lastUpdated).toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+                <span className="text-[11px] text-[#8B919C] block font-mono">REPORTING CURRENCY</span>
+                <span className="text-xs font-medium text-[#E8E9EB] mt-1 block font-mono">{stock.currency}</span>
+              </div>
+              <div className="bg-[#151922] p-3 rounded-lg border border-[#252A33]">
+                <span className="text-[11px] text-[#8B919C] block font-mono">EXCHANGE ROUTE</span>
+                <span className="text-xs font-medium text-[#E8E9EB] mt-1 block font-mono">{stock.exchange}</span>
+              </div>
+            </div>
+
+            <div className="bg-[#151922] p-4 rounded-lg border border-[#252A33] space-y-2 text-xs">
+              <span className="font-semibold text-[#E8E9EB] block">Field Resolution & Missing Data Policy:</span>
+              <ul className="list-disc list-inside space-y-1 text-[#8B919C] leading-relaxed">
+                <li>
+                  <strong className="text-[#E8E9EB]">Technical Honesty:</strong> When fundamental fields are not disclosed by the company or not applicable (such as commercial banks without traditional gross inventory or industrial debt ratios), the application presents <code className="text-[#7FA6C9] font-mono">"—"</code> rather than substituting false zero values.
+                </li>
+                <li>
+                  <strong className="text-[#E8E9EB]">Resilient Architecture:</strong> Unlike external client-side scrapers that fail with CORS or HTTP 403 errors, the Node backend service isolates errors gracefully and retains 15-minute cached records.
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       )}
 
       {/* Business Description */}
       {stock.description && (
-        <div className="bg-[#121622] border border-[#1E2638] rounded-xl p-5 shadow-lg">
-          <h3 className="text-xs font-mono font-semibold text-blue-400 uppercase tracking-wider mb-2">
+        <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
+          <h3 className="text-xs font-mono font-semibold text-[#7FA6C9] uppercase tracking-wider mb-2">
             Company Business Overview
           </h3>
-          <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
+          <p className="text-xs text-[#8B919C] leading-relaxed max-w-4xl">
             {stock.description}
           </p>
         </div>
@@ -1123,12 +1470,26 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="floating-ask-ai-btn"
           onClick={() => setIsAiChatOpen(true)}
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white hover:bg-slate-200 text-slate-900 shadow-xl shadow-black/40 font-medium text-xs border border-slate-300 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#151922] hover:bg-[#151922]/90 text-[#E8E9EB] shadow-lg shadow-black/50 font-medium text-xs border border-[#252A33] transition-all cursor-pointer"
         >
-          <Sparkles className="w-4 h-4 text-slate-900" />
+          <Sparkles className="w-4 h-4 text-[#7FA6C9]" />
           <span>Ask AI about {stock.symbol}</span>
         </button>
       )}
+
+      {/* Explain Move AI Analysis Modal */}
+      <ExplainMoveModal
+        isOpen={isExplainMoveOpen}
+        onClose={() => setIsExplainMoveOpen(false)}
+        stock={stock}
+      />
+
+      {/* Institutional Thesis Builder Modal */}
+      <ThesisBuilderModal
+        isOpen={isThesisBuilderOpen}
+        onClose={() => setIsThesisBuilderOpen(false)}
+        stock={stock}
+      />
 
       {/* 1-Page Investment Memo / PDF Tearsheet Modal */}
       <InvestmentMemoModal
