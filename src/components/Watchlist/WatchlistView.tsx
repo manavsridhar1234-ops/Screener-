@@ -50,12 +50,12 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
 
   if (watchlist.length === 0) {
     return (
-      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-12 text-center max-w-lg mx-auto space-y-3 shadow-sm">
-        <div className="w-12 h-12 rounded-full bg-[#151922] border border-[#252A33] text-[#B8A36A] flex items-center justify-center mx-auto">
-          <Star className="w-5 h-5 fill-[#B8A36A]/20" />
+      <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl p-12 text-center max-w-lg mx-auto space-y-3 shadow-xl shadow-black/20 font-sans">
+        <div className="w-12 h-12 rounded-full bg-[#141820] border border-[#1F2633] text-[#F59E0B] flex items-center justify-center mx-auto shadow-sm">
+          <Star className="w-5 h-5 fill-[#F59E0B]/20" />
         </div>
-        <h3 className="text-sm font-semibold text-[#E8E9EB]">Your Watchlist is Empty</h3>
-        <p className="text-xs text-[#8B919C] leading-relaxed">
+        <h3 className="text-sm font-semibold text-[#F0F2F5]">Your Watchlist is Empty</h3>
+        <p className="text-xs text-[#8E98A8] leading-relaxed">
           Click the star icon next to any ticker in the Stock Screener or Stock Analysis pages to bookmark companies for rapid monitoring.
         </p>
       </div>
@@ -63,31 +63,31 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-4 flex items-center justify-between shadow-sm">
+    <div className="space-y-4 font-sans">
+      <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl p-4 sm:p-5 flex items-center justify-between shadow-xl shadow-black/20">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-[#E8E9EB]">Personal Watchlist</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-[#151922] text-[#B8A36A] border border-[#252A33] font-mono">
+            <h2 className="text-base font-bold text-[#F0F2F5]">Personal Watchlist</h2>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#1C1811] text-[#F59E0B] border border-[#F59E0B]/30 font-mono">
               {stocks.length} tracked
             </span>
           </div>
-          <p className="text-xs text-[#8B919C] mt-0.5">
+          <p className="text-xs text-[#8E98A8] mt-1">
             Bookmarked companies saved to your local browser storage.
           </p>
         </div>
       </div>
 
-      <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-x-auto shadow-sm">
+      <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl overflow-x-auto shadow-xl shadow-black/20">
         {isLoading ? (
-          <div className="p-8 text-center flex items-center justify-center gap-2 text-xs text-[#8B919C]">
-            <RefreshCw className="w-4 h-4 animate-spin text-[#7FA6C9]" />
+          <div className="p-8 text-center flex items-center justify-center gap-2 text-xs text-[#8E98A8]">
+            <RefreshCw className="w-4 h-4 animate-spin text-[#38BDF8]" />
             Loading watchlist fundamentals...
           </div>
         ) : (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[#252A33] bg-[#0B0D10] text-[#8B919C] font-mono text-[11px]">
+              <tr className="border-b border-[#1F2633] bg-[#090B0E] text-[#8E98A8] font-mono text-[11px]">
                 <th className="py-3 px-3">Ticker</th>
                 <th className="py-3 px-3">Company</th>
                 <th className="py-3 px-3">Exchange</th>
@@ -101,55 +101,55 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
                 <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#252A33]">
+            <tbody className="divide-y divide-[#1F2633]">
               {stocks.map((stock) => {
                 const isPositive = (stock.dayChangePercent ?? 0) >= 0;
                 const isCompared = compareList.includes(stock.symbol);
                 return (
-                  <tr key={stock.symbol} className="hover:bg-[#151922]/60 transition">
+                  <tr key={stock.symbol} className="hover:bg-[#141820]/60 transition">
                     <td className="py-2.5 px-3">
                       <button
                         onClick={() => onSelectStock(stock.symbol)}
-                        className="font-mono font-medium text-[#7FA6C9] hover:underline"
+                        className="font-mono font-bold text-[#38BDF8] hover:underline"
                       >
                         {stock.symbol}
                       </button>
                     </td>
-                    <td className="py-2.5 px-3 font-medium text-[#E8E9EB] truncate max-w-[180px]">
+                    <td className="py-2.5 px-3 font-medium text-[#F0F2F5] truncate max-w-[180px]">
                       {stock.companyName}
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-[#8B919C]">
+                    <td className="py-2.5 px-3 font-mono text-[#8E98A8]">
                       {stock.exchange}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium text-[#E8E9EB]">
+                    <td className="py-2.5 px-3 text-right font-mono font-semibold text-[#F0F2F5]">
                       {formatCurrency(stock.price, stock.currency, false)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium">
-                      <span className={isPositive ? 'text-[#6FA58A]' : 'text-[#B87878]'}>
+                    <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                      <span className={isPositive ? 'text-[#10B981]' : 'text-[#EF4444]'}>
                         {formatPercent(stock.dayChangePercent)}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[#E8E9EB]">
+                    <td className="py-2.5 px-3 text-right font-mono text-[#F0F2F5]">
                       {formatCurrency(stock.marketCap, stock.currency)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[#E8E9EB]">
+                    <td className="py-2.5 px-3 text-right font-mono text-[#F0F2F5]">
                       {formatRatio(stock.peRatio)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[#E8E9EB]">
+                    <td className="py-2.5 px-3 text-right font-mono text-[#F0F2F5]">
                       {formatPercent(stock.revenueGrowth)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium">
+                    <td className="py-2.5 px-3 text-right font-mono font-semibold">
                       <span className={
                         stock.returnOnEquity !== null && stock.returnOnEquity >= 15
-                          ? 'text-[#6FA58A]'
+                          ? 'text-[#10B981]'
                           : stock.returnOnEquity !== null && stock.returnOnEquity < 0
-                          ? 'text-[#B87878]'
-                          : 'text-[#E8E9EB]'
+                          ? 'text-[#EF4444]'
+                          : 'text-[#F0F2F5]'
                       }>
                         {formatPercent(stock.returnOnEquity, false)}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[#E8E9EB]">
+                    <td className="py-2.5 px-3 text-right font-mono text-[#F0F2F5]">
                       {formatCurrency(stock.freeCashFlow, stock.currency)}
                     </td>
                     <td className="py-2.5 px-3 text-center">
@@ -159,8 +159,8 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
                           title="Toggle Compare"
                           className={`p-1.5 rounded transition ${
                             isCompared
-                              ? 'bg-[#151922] text-[#7FA6C9] border border-[#252A33]'
-                              : 'text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922]'
+                              ? 'bg-[#161B26] text-[#38BDF8] border border-[#38BDF8]/40'
+                              : 'text-[#8E98A8] hover:text-[#F0F2F5] hover:bg-[#141820]'
                           }`}
                         >
                           <Scale className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
                         <button
                           onClick={() => removeFromWatchlist(stock.symbol)}
                           title="Remove from Watchlist"
-                          className="p-1.5 rounded text-[#8B919C] hover:text-[#B87878] hover:bg-[#151922] transition"
+                          className="p-1.5 rounded text-[#8E98A8] hover:text-[#EF4444] hover:bg-[#141820] transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

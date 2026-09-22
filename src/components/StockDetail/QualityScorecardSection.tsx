@@ -36,52 +36,52 @@ export const QualityScorecardSection: React.FC<QualityScorecardSectionProps> = (
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Strong':
-        return 'bg-[#151922] text-[#6FA58A] border-[#252A33]';
+        return 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30';
       case 'Healthy':
-        return 'bg-[#151922] text-[#7FA6C9] border-[#252A33]';
+        return 'bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/30';
       case 'Moderate':
-        return 'bg-[#151922] text-[#B8A36A] border-[#252A33]';
+        return 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30';
       case 'Caution':
-        return 'bg-[#151922] text-[#B87878] border-[#252A33]';
+        return 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30';
       default:
-        return 'bg-[#151922] text-[#8B919C] border-[#252A33]';
+        return 'bg-[#141820] text-[#8E98A8] border-[#1F2633]';
     }
   };
 
   return (
-    <div id="quality-scorecard-section" className="space-y-4">
+    <div id="quality-scorecard-section" className="space-y-4 font-sans">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#252A33]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#1F2633]">
         <div>
-          <h2 className="text-sm font-mono font-semibold text-[#E8E9EB] uppercase tracking-wider flex items-center gap-2">
-            <Award className="w-4 h-4 text-[#7FA6C9]" />
+          <h2 className="text-sm font-mono font-bold text-[#F0F2F5] uppercase tracking-wider flex items-center gap-2">
+            <Award className="w-4 h-4 text-[#38BDF8]" />
             <span>Institutional Quality Scorecard</span>
           </h2>
-          <p className="text-xs text-[#8B919C] mt-0.5">
+          <p className="text-xs text-[#8E98A8] mt-0.5">
             Objective fundamental evaluation across 6 core capital allocation & financial dimensions.
           </p>
         </div>
-        <div className="text-xs font-mono text-[#8B919C]">
-          Status: <span className="text-[#6FA58A] font-medium">Audited TTM & FY Comps</span>
+        <div className="text-xs font-mono text-[#8E98A8]">
+          Status: <span className="text-[#10B981] font-semibold">Audited TTM & FY Comps</span>
         </div>
       </div>
 
       {/* Grid of 6 Dimensions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {scorecard.dimensions.map((dim) => {
           return (
             <div
               key={dim.id}
               onClick={() => setSelectedDimension(dim)}
-              className="bg-[#11141A] hover:bg-[#151922] border border-[#252A33] hover:border-[#7FA6C9]/40 rounded-xl p-4 transition cursor-pointer flex flex-col justify-between group shadow-sm"
+              className="bg-[#0E1217] hover:bg-[#141820] border border-[#1F2633] hover:border-[#38BDF8]/50 rounded-xl p-4 sm:p-5 transition cursor-pointer flex flex-col justify-between group shadow-lg shadow-black/20"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-medium text-xs text-[#E8E9EB] group-hover:text-white transition">
+                  <span className="font-semibold text-xs text-[#F0F2F5] group-hover:text-[#38BDF8] transition">
                     {dim.name}
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border uppercase tracking-wider ${getStatusBadge(
+                    className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getStatusBadge(
                       dim.status
                     )}`}
                   >
@@ -89,24 +89,24 @@ export const QualityScorecardSection: React.FC<QualityScorecardSectionProps> = (
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#8B919C] line-clamp-2 mb-3 leading-relaxed">
+                <p className="text-[11px] text-[#8E98A8] line-clamp-2 mb-3 leading-relaxed">
                   {dim.summary}
                 </p>
 
                 {/* Compact Metrics Preview */}
-                <div className="space-y-1.5 pt-2 border-t border-[#252A33]/70">
+                <div className="space-y-1.5 pt-2 border-t border-[#1F2633]/80">
                   {dim.metrics.slice(0, 2).map((m, idx) => (
                     <div key={idx} className="flex items-center justify-between text-[11px]">
-                      <span className="text-[#8B919C] truncate max-w-[130px]">{m.label}</span>
-                      <span className="font-mono font-medium text-[#E8E9EB]">{m.value}</span>
+                      <span className="text-[#8E98A8] truncate max-w-[130px]">{m.label}</span>
+                      <span className="font-mono font-semibold text-[#F0F2F5]">{m.value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-[#252A33]/60 flex items-center justify-between text-[10px] text-[#8B919C] font-mono group-hover:text-[#E8E9EB]">
+              <div className="mt-3 pt-2.5 border-t border-[#1F2633] flex items-center justify-between text-[10px] text-[#8E98A8] font-mono group-hover:text-[#F0F2F5]">
                 <span>View dimension audit</span>
-                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#7FA6C9]" />
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#38BDF8]" />
               </div>
             </div>
           );
@@ -115,54 +115,54 @@ export const QualityScorecardSection: React.FC<QualityScorecardSectionProps> = (
 
       {/* Drill-down Modal for Dimension Audit */}
       {selectedDimension && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#11141A] border border-[#252A33] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl space-y-4 p-5">
-            <div className="flex items-center justify-between border-b border-[#252A33] pb-3">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="bg-[#0E1217] border border-[#1F2633] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl space-y-4 p-5 sm:p-6">
+            <div className="flex items-center justify-between border-b border-[#1F2633] pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#7FA6C9]">
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#161B26] border border-[#38BDF8]/40 text-[#38BDF8]">
                     {stock.symbol}
                   </span>
-                  <h3 className="font-semibold text-sm text-[#E8E9EB]">
+                  <h3 className="font-semibold text-sm text-[#F0F2F5]">
                     {selectedDimension.name} Audit
                   </h3>
                 </div>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border uppercase ${getStatusBadge(selectedDimension.status)}`}>
+                  <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border uppercase ${getStatusBadge(selectedDimension.status)}`}>
                     Overall: {selectedDimension.status}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedDimension(null)}
-                className="p-1 rounded-lg hover:bg-[#151922] text-[#8B919C] hover:text-[#E8E9EB] transition"
+                className="p-1 rounded-lg hover:bg-[#141820] text-[#8E98A8] hover:text-[#F0F2F5] transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-[#8B919C] leading-relaxed">
+            <p className="text-xs text-[#8E98A8] leading-relaxed">
               {selectedDimension.detailNotes}
             </p>
 
             {/* Metrics Breakdown Table */}
             <div className="space-y-2">
-              <span className="text-[11px] font-mono text-[#8B919C] uppercase tracking-wider block">
+              <span className="text-[11px] font-mono text-[#8E98A8] uppercase tracking-wider block">
                 Evaluated Metrics vs Institutional Thresholds:
               </span>
-              <div className="divide-y divide-[#252A33] border border-[#252A33] rounded-xl overflow-hidden bg-[#0B0D10]">
+              <div className="divide-y divide-[#1F2633] border border-[#1F2633] rounded-xl overflow-hidden bg-[#090B0E]">
                 {selectedDimension.metrics.map((m, idx) => (
                   <div key={idx} className="p-3 flex items-center justify-between text-xs">
                     <div>
-                      <div className="font-medium text-[#E8E9EB]">{m.label}</div>
-                      <div className="text-[10px] text-[#8B919C] font-mono mt-0.5">{m.benchmark}</div>
+                      <div className="font-medium text-[#F0F2F5]">{m.label}</div>
+                      <div className="text-[10px] text-[#8E98A8] font-mono mt-0.5">{m.benchmark}</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-mono font-semibold text-sm text-[#E8E9EB]">{m.value}</div>
+                      <div className="font-mono font-bold text-sm text-[#F0F2F5]">{m.value}</div>
                       <div className="text-[10px] font-mono capitalize">
-                        {m.status === 'good' && <span className="text-[#6FA58A]">Pass</span>}
-                        {m.status === 'neutral' && <span className="text-[#8B919C]">In Line</span>}
-                        {m.status === 'warning' && <span className="text-[#B8A36A]">Review</span>}
+                        {m.status === 'good' && <span className="text-[#10B981] font-semibold">Pass</span>}
+                        {m.status === 'neutral' && <span className="text-[#8E98A8]">In Line</span>}
+                        {m.status === 'warning' && <span className="text-[#F59E0B] font-semibold">Review</span>}
                       </div>
                     </div>
                   </div>
@@ -173,7 +173,7 @@ export const QualityScorecardSection: React.FC<QualityScorecardSectionProps> = (
             <div className="pt-2 text-right">
               <button
                 onClick={() => setSelectedDimension(null)}
-                className="px-4 py-2 rounded-lg bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] text-xs font-mono font-medium text-[#E8E9EB] transition"
+                className="px-4 py-2 rounded-lg bg-[#141820] hover:bg-[#1A202C] border border-[#1F2633] text-xs font-mono font-semibold text-[#F0F2F5] transition"
               >
                 Close Audit
               </button>

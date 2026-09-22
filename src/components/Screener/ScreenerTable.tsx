@@ -74,13 +74,13 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <div className="flex flex-col min-w-[170px]">
             <span
               onClick={() => onSelectStock(stock.symbol)}
-              className="text-xs font-medium text-[#E8E9EB] hover:text-[#7FA6C9] cursor-pointer transition truncate max-w-[210px]"
+              className="text-xs font-semibold text-[#F0F2F5] hover:text-[#38BDF8] cursor-pointer transition truncate max-w-[210px]"
               title={stock.companyName}
             >
               {stock.companyName}
             </span>
-            <div className="flex items-center gap-1.5 text-[10px] text-[#8B919C]">
-              <span className="font-mono text-[#8B919C]">{stock.exchange}</span>
+            <div className="flex items-center gap-1.5 text-[10px] text-[#8E98A8]">
+              <span className="font-mono text-[#8E98A8]">{stock.exchange}</span>
               <span>•</span>
               <span className="truncate">{stock.country}</span>
             </div>
@@ -92,18 +92,18 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onSelectStock(stock.symbol)}
-              className="font-mono font-medium text-xs text-[#7FA6C9] hover:underline transition text-left"
+              className="font-mono font-semibold text-xs text-[#38BDF8] hover:text-[#38BDF8]/80 hover:underline transition text-left"
             >
               {stock.symbol}
             </button>
             <button
               onClick={() => toggleWatchlist(stock.symbol)}
-              className="p-0.5 text-[#8B919C] hover:text-[#B8A36A] transition"
+              className="p-0.5 text-[#8E98A8] hover:text-[#F59E0B] transition"
               title={isInWatchlist(stock.symbol) ? 'Remove from Watchlist' : 'Add to Watchlist'}
             >
               <Star
                 className={`w-3.5 h-3.5 ${
-                  isInWatchlist(stock.symbol) ? 'fill-[#B8A36A] text-[#B8A36A]' : ''
+                  isInWatchlist(stock.symbol) ? 'fill-[#F59E0B] text-[#F59E0B]' : ''
                 }`}
               />
             </button>
@@ -111,15 +111,15 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
         );
 
       case 'exchange':
-        return <span className="font-mono text-[#8B919C] text-xs">{stock.exchange}</span>;
+        return <span className="font-mono text-[#8E98A8] text-xs">{stock.exchange}</span>;
 
       case 'country':
-        return <span className="text-[#8B919C] text-xs truncate max-w-[90px]">{stock.country}</span>;
+        return <span className="text-[#8E98A8] text-xs truncate max-w-[90px]">{stock.country}</span>;
 
       case 'sector':
         return (
           <span
-            className="text-[#8B919C] text-xs truncate max-w-[130px] block"
+            className="text-[#8E98A8] text-xs truncate max-w-[130px] block"
             title={stock.sector || 'Unclassified'}
           >
             {stock.sector || '—'}
@@ -131,7 +131,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
         const formatted = formatCurrency(val, stock.currency);
         return (
           <MetricTooltip metricKey="marketCap" value={val} formattedValue={formatted} stock={stock} className="justify-end w-full">
-            <span className="font-mono text-[#E8E9EB] text-xs font-medium">{formatted}</span>
+            <span className="font-mono text-[#F0F2F5] text-xs font-semibold">{formatted}</span>
           </MetricTooltip>
         );
       }
@@ -355,21 +355,21 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
   const activeColumnsList = ALL_COLUMNS.filter(c => visibleColumns.includes(c.id));
 
   return (
-    <div className="bg-[#11141A] border border-[#252A33] rounded-xl overflow-hidden flex flex-col shadow-sm">
+    <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl overflow-hidden flex flex-col shadow-xl shadow-black/30">
       {/* Table Toolbar */}
-      <div className="p-4 border-b border-[#252A33] flex flex-wrap items-center justify-between gap-3 bg-[#11141A]">
+      <div className="p-4 border-b border-[#1F2633] flex flex-wrap items-center justify-between gap-3 bg-[#0E1217]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[#E8E9EB]">Results</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-[#151922] text-[#7FA6C9] border border-[#252A33]">
+            <span className="text-sm font-semibold text-[#F0F2F5]">Results</span>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#141820] text-[#38BDF8] border border-[#1F2633]">
               {totalCount} {totalCount === 1 ? 'stock' : 'stocks'}
             </span>
           </div>
 
           {compareList.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-[#151922] border border-[#252A33] px-2.5 py-1 rounded-lg text-xs text-[#7FA6C9]">
+            <div className="flex items-center gap-1.5 bg-[#141820] border border-[#38BDF8]/30 px-2.5 py-1 rounded-lg text-xs text-[#38BDF8]">
               <Scale className="w-3.5 h-3.5" />
-              <span>{compareList.length} selected for comparison</span>
+              <span className="font-medium">{compareList.length} selected for comparison</span>
             </div>
           )}
         </div>
@@ -379,9 +379,9 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
           <button
             id="customize-columns-btn"
             onClick={onOpenColumnPicker}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8B919C] hover:text-[#E8E9EB] bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8E98A8] hover:text-[#F0F2F5] bg-[#141820] hover:bg-[#1A202C] border border-[#1F2633] transition"
           >
-            <Columns className="w-3.5 h-3.5 text-[#7FA6C9]" />
+            <Columns className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>Columns ({visibleColumns.length})</span>
           </button>
 
@@ -390,10 +390,10 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
             id="export-csv-btn"
             onClick={handleExportCSV}
             disabled={stocks.length === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#E8E9EB] bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] transition disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#F0F2F5] bg-[#141820] hover:bg-[#1A202C] border border-[#1F2633] transition disabled:opacity-40"
             title="Export filtered stock universe with all valuation, profitability, and solvency metrics to CSV / Excel"
           >
-            <Download className="w-3.5 h-3.5 text-[#6FA58A]" />
+            <Download className="w-3.5 h-3.5 text-[#34D399]" />
             <span className="hidden sm:inline font-medium">Export (Excel / CSV)</span>
           </button>
         </div>
@@ -403,21 +403,21 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
       <div className="overflow-x-auto relative min-h-[350px]">
         {isLoading ? (
           <div className="p-8 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-7 h-7 rounded-full border-2 border-[#7FA6C9] border-t-transparent animate-spin" />
-            <p className="text-xs text-[#8B919C] font-mono">Filtering normalized equity database...</p>
+            <div className="w-7 h-7 rounded-full border-2 border-[#38BDF8] border-t-transparent animate-spin" />
+            <p className="text-xs text-[#8E98A8] font-mono">Filtering normalized equity database...</p>
           </div>
         ) : stocks.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3 max-w-md mx-auto">
-            <div className="w-10 h-10 rounded-full bg-[#151922] border border-[#252A33] flex items-center justify-center text-[#8B919C] mb-1">
+            <div className="w-10 h-10 rounded-full bg-[#141820] border border-[#1F2633] flex items-center justify-center text-[#8E98A8] mb-1">
               <AlertCircle className="w-5 h-5" />
             </div>
-            <h4 className="text-sm font-semibold text-[#E8E9EB]">No Matching Stocks Found</h4>
-            <p className="text-xs text-[#8B919C] leading-relaxed">
+            <h4 className="text-sm font-semibold text-[#F0F2F5]">No Matching Stocks Found</h4>
+            <p className="text-xs text-[#8E98A8] leading-relaxed">
               No companies in the universe match the current filter criteria. Try relaxing your valuation multiples, broadening the market cap range, or checking "Inc. N/A".
             </p>
             <button
               onClick={onClearFilters}
-              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] text-[#E8E9EB] text-xs font-medium transition"
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#141820] hover:bg-[#1A202C] border border-[#1F2633] text-[#F0F2F5] text-xs font-medium transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset All Filters
@@ -426,7 +426,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#252A33] bg-[#0B0D10] text-[11px] font-mono text-[#8B919C] select-none">
+              <tr className="border-b border-[#1F2633] bg-[#090B0E] text-[11px] font-mono text-[#8E98A8] select-none">
                 {/* Selection Checkbox */}
                 <th className="py-3 px-3 w-8 text-center">
                   <span className="sr-only">Select</span>
@@ -445,23 +445,23 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
                       key={col.id}
                       onClick={() => onSort(col.id)}
                       style={{ minWidth: col.minWidth || 90 }}
-                      className={`py-3 px-3 cursor-pointer hover:bg-[#151922] transition text-${col.align || 'left'} ${
-                        isSorted ? 'text-[#7FA6C9] font-medium bg-[#151922]' : ''
+                      className={`py-3 px-3 cursor-pointer hover:bg-[#141820] transition text-${col.align || 'left'} ${
+                        isSorted ? 'text-[#38BDF8] font-semibold bg-[#141820]' : ''
                       }`}
                     >
                       <div className={`inline-flex items-center gap-1 ${col.align === 'right' ? 'justify-end' : ''}`}>
                         {isMetric ? (
                           <MetricTooltip metricKey={col.id} underlined={false}>
-                            <span className="hover:text-[#E8E9EB] transition-colors">{col.label}</span>
+                            <span className="hover:text-[#F0F2F5] transition-colors">{col.label}</span>
                           </MetricTooltip>
                         ) : (
                           <span>{col.label}</span>
                         )}
                         {isSorted ? (
                           sortOrder === 'asc' ? (
-                            <ArrowUp className="w-3 h-3 text-[#7FA6C9]" />
+                            <ArrowUp className="w-3 h-3 text-[#38BDF8]" />
                           ) : (
-                            <ArrowDown className="w-3 h-3 text-[#7FA6C9]" />
+                            <ArrowDown className="w-3 h-3 text-[#38BDF8]" />
                           )
                         ) : (
                           <ArrowUpDown className="w-3 h-3 opacity-30 group-hover:opacity-100" />
@@ -472,15 +472,15 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#252A33] text-xs">
+            <tbody className="divide-y divide-[#1F2633] text-xs">
               {stocks.map((stock) => {
                 const isCompared = compareList.includes(stock.symbol);
                 return (
                   <tr
                     key={stock.symbol}
                     id={`stock-row-${stock.symbol}`}
-                    className={`hover:bg-[#151922]/60 transition group ${
-                      isCompared ? 'bg-[#7FA6C9]/10' : ''
+                    className={`hover:bg-[#141820]/70 transition group ${
+                      isCompared ? 'bg-[#38BDF8]/10' : ''
                     }`}
                   >
                     {/* Checkbox */}
@@ -489,7 +489,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
                         type="checkbox"
                         checked={isCompared}
                         onChange={() => onToggleCompare(stock.symbol)}
-                        className="w-3.5 h-3.5 rounded bg-[#0B0D10] border-[#252A33] text-[#7FA6C9] focus:ring-0 cursor-pointer"
+                        className="w-3.5 h-3.5 rounded bg-[#090B0E] border-[#1F2633] text-[#38BDF8] focus:ring-0 cursor-pointer"
                         title="Select to compare"
                       />
                     </td>
@@ -512,7 +512,7 @@ export const ScreenerTable: React.FC<ScreenerTableProps> = ({
       </div>
 
       {/* Pagination & Footer */}
-      <div className="p-3 border-t border-[#252A33] bg-[#11141A] flex flex-wrap items-center justify-between gap-3 text-xs text-[#8B919C]">
+      <div className="p-3 border-t border-[#1F2633] bg-[#0E1217] flex flex-wrap items-center justify-between gap-3 text-xs text-[#8E98A8]">
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
           <select

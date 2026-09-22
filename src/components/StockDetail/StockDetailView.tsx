@@ -263,41 +263,41 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
     : '';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* 1. Header Card */}
-      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
+      <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl p-5 sm:p-6 shadow-xl shadow-black/20">
         {/* Top Row: Company Info & Live Price */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-mono font-bold text-2xl text-[#E8E9EB] tracking-wider">
+              <span className="font-mono font-bold text-2xl sm:text-3xl text-[#F0F2F5] tracking-wider text-glow-cyan">
                 {stock.symbol}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] font-mono whitespace-nowrap">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#141820] border border-[#1F2633] text-[#8E98A8] font-mono whitespace-nowrap">
                 {stock.exchange}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#7FA6C9] font-sans whitespace-nowrap">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#161B26] border border-[#38BDF8]/30 text-[#38BDF8] font-sans font-medium whitespace-nowrap">
                 {stock.country}
               </span>
               {stock.currency && (
-                <span className="text-xs px-2 py-0.5 rounded bg-[#151922] border border-[#252A33] text-[#8B919C] font-mono whitespace-nowrap">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#141820] border border-[#1F2633] text-[#8E98A8] font-mono whitespace-nowrap">
                   {stock.currency}
                 </span>
               )}
             </div>
 
-            <h1 className="text-base font-semibold text-[#E8E9EB] mt-1">
+            <h1 className="text-lg font-semibold text-[#F0F2F5] mt-1.5">
               {stock.companyName}
             </h1>
 
-            <div className="flex items-center gap-2 text-xs text-[#8B919C] mt-1.5 flex-wrap">
-              <span className="whitespace-nowrap">{stock.sector || 'General Sector'}</span>
+            <div className="flex items-center gap-2 text-xs text-[#8E98A8] mt-1.5 flex-wrap">
+              <span className="whitespace-nowrap font-medium text-[#C8D1DE]">{stock.sector || 'General Sector'}</span>
               <span>•</span>
               <span className="whitespace-nowrap">{stock.industry || 'General Industry'}</span>
               {stock.employees && (
                 <>
                   <span>•</span>
-                  <span className="whitespace-nowrap">{stock.employees.toLocaleString()} employees</span>
+                  <span className="whitespace-nowrap font-mono">{stock.employees.toLocaleString()} employees</span>
                 </>
               )}
             </div>
@@ -306,7 +306,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           {/* Live Price Block */}
           <div className="text-left md:text-right shrink-0">
             <div className="flex items-baseline gap-2.5 md:justify-end">
-              <span className="font-mono font-semibold text-3xl text-[#E8E9EB]">
+              <span className="font-mono font-bold text-3xl sm:text-4xl text-[#F0F2F5] tracking-tight">
                 {formatCurrency(stock.price, stock.currency, false)}
               </span>
               <MetricTooltip
@@ -316,44 +316,44 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 stock={stock}
               >
                 <span
-                  className={`font-mono text-sm font-medium flex items-center gap-1 ${
-                    isPositive ? 'text-[#6FA58A]' : 'text-[#B87878]'
+                  className={`font-mono text-sm font-semibold flex items-center gap-1 ${
+                    isPositive ? 'text-[#10B981]' : 'text-[#EF4444]'
                   }`}
                 >
                   {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                   {formatPercent(displayDayPercent)}
-                  <span className="text-xs opacity-75">
+                  <span className="text-xs opacity-80 font-mono">
                     ({stock.dayChange && stock.dayChange > 0 ? '+' : ''}
                     {stock.dayChange?.toFixed(2)})
                   </span>
                 </span>
               </MetricTooltip>
             </div>
-            <div className="text-[11px] text-[#8B919C] font-mono mt-0.5">
+            <div className="text-[11px] text-[#8E98A8] font-mono mt-1">
               <MetricTooltip
                 metricKey="marketCap"
                 value={stock.marketCap}
                 formattedValue={formatCurrency(stock.marketCap, stock.currency)}
                 stock={stock}
-                className="text-[#8B919C] hover:text-[#E8E9EB]"
+                className="text-[#8E98A8] hover:text-[#38BDF8]"
               >
-                Market Cap: {formatCurrency(stock.marketCap, stock.currency)}
+                Market Cap: <span className="text-[#F0F2F5] font-semibold">{formatCurrency(stock.marketCap, stock.currency)}</span>
               </MetricTooltip>
             </div>
           </div>
         </div>
 
         {/* Action Toolbar */}
-        <div className="mt-4 pt-3.5 border-t border-[#252A33] flex flex-wrap items-center justify-between gap-2.5">
+        <div className="mt-5 pt-4 border-t border-[#1F2633] flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Ask AI Analyst Button */}
             <button
               id="ask-stock-ai-action-btn"
               onClick={() => setIsAiChatOpen(true)}
               title="Ask the in-house AI Analyst anything about this stock"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#151922] hover:bg-[#151922]/80 border border-[#252A33] text-[#E8E9EB] shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#161B26] hover:bg-[#1A202C] border border-[#38BDF8]/40 text-[#F0F2F5] shadow-sm shadow-[#38BDF8]/10 hover:shadow-[#38BDF8]/20 transition-all cursor-pointer whitespace-nowrap shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#7FA6C9]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Ask AI Analyst</span>
             </button>
 
@@ -362,9 +362,9 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               id="view-investment-memo-btn"
               onClick={() => setIsMemoOpen(true)}
               title="Generate printable 1-Page Executive Investment Memo / PDF Tearsheet"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#E8E9EB] hover:bg-[#151922]/80 transition shadow-sm whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#1F2633] bg-[#141820] text-[#F0F2F5] hover:bg-[#1A202C] hover:border-[#38BDF8]/40 transition shadow-sm whitespace-nowrap shrink-0"
             >
-              <FileText className="w-3.5 h-3.5 text-[#7FA6C9]" />
+              <FileText className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>1-Page Memo</span>
             </button>
 
@@ -373,9 +373,9 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               id="export-model-excel-btn"
               onClick={() => exportStockModelToCsv(stock, growthSeries, statements)}
               title="Export complete 5-year financial model, valuation multiples, and statement data to Excel / CSV"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#8B919C] hover:bg-[#151922]/80 hover:text-[#E8E9EB] transition shadow-sm whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#1F2633] bg-[#141820] text-[#8E98A8] hover:bg-[#1A202C] hover:text-[#F0F2F5] transition shadow-sm whitespace-nowrap shrink-0"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-[#6FA58A]" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#10B981]" />
               <span>Export Model (Excel)</span>
             </button>
 
@@ -391,11 +391,11 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                   }
                 }}
                 title={`Auto-populate Side-by-Side matrix with ${benchmarkData.peerStocks.map((p) => p.symbol).join(', ')}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#252A33] bg-[#151922] text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922]/80 transition shadow-sm whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#1F2633] bg-[#141820] text-[#8E98A8] hover:text-[#F0F2F5] hover:bg-[#1A202C] transition shadow-sm whitespace-nowrap shrink-0"
               >
-                <Users className="w-3.5 h-3.5 text-[#8B919C]" />
+                <Users className="w-3.5 h-3.5 text-[#8E98A8]" />
                 <span>Peers</span>
-                <span className="text-[10px] bg-[#0B0D10] text-[#7FA6C9] px-1.5 py-0.5 rounded-full font-mono border border-[#252A33]">
+                <span className="text-[10px] bg-[#090B0E] text-[#38BDF8] px-1.5 py-0.5 rounded-full font-mono border border-[#1F2633]">
                   {benchmarkData.peerStocks.length}
                 </span>
               </button>
@@ -406,15 +406,15 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             <button
               id="toggle-watchlist-btn"
               onClick={() => toggleWatchlist(stock.symbol)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
                 isInWatchlist(stock.symbol)
-                  ? 'bg-[#151922] text-[#B8A36A] border-[#B8A36A]/50'
-                  : 'bg-[#151922] text-[#8B919C] border-[#252A33] hover:text-[#E8E9EB] hover:bg-[#151922]/80'
+                  ? 'bg-[#1C1811] text-[#F59E0B] border-[#F59E0B]/50 shadow-sm shadow-[#F59E0B]/10'
+                  : 'bg-[#141820] text-[#8E98A8] border-[#1F2633] hover:text-[#F0F2F5] hover:bg-[#1A202C]'
               }`}
             >
               <Star
                 className={`w-3.5 h-3.5 ${
-                  isInWatchlist(stock.symbol) ? 'fill-[#B8A36A] text-[#B8A36A]' : 'text-[#8B919C]'
+                  isInWatchlist(stock.symbol) ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-[#8E98A8]'
                 }`}
               />
               <span>{isInWatchlist(stock.symbol) ? 'Watching' : 'Watchlist'}</span>
@@ -423,10 +423,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             <button
               id="toggle-compare-btn"
               onClick={() => onToggleCompare(stock.symbol)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap shrink-0 ${
                 isCompared
-                  ? 'bg-[#151922] text-[#7FA6C9] border-[#7FA6C9]/50 shadow-sm'
-                  : 'bg-[#151922] text-[#8B919C] border-[#252A33] hover:text-[#E8E9EB] hover:bg-[#151922]/80'
+                  ? 'bg-[#161B26] text-[#38BDF8] border-[#38BDF8]/60 shadow-sm shadow-[#38BDF8]/10'
+                  : 'bg-[#141820] text-[#8E98A8] border-[#1F2633] hover:text-[#F0F2F5] hover:bg-[#1A202C]'
               }`}
             >
               <Scale className="w-3.5 h-3.5" />
@@ -436,61 +436,61 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </div>
 
         {/* 52-Week Range Bar */}
-        <div className="mt-5 pt-4 border-t border-[#252A33]">
-          <div className="flex items-center justify-between text-xs font-mono text-[#8B919C] mb-1.5">
+        <div className="mt-5 pt-4 border-t border-[#1F2633]">
+          <div className="flex items-center justify-between text-xs font-mono text-[#8E98A8] mb-2">
             <MetricTooltip
               metricKey="fiftyTwoWeekLow"
               value={stock.fiftyTwoWeekLow ?? (stock as any).week52Low}
               formattedValue={formatCurrency(stock.fiftyTwoWeekLow ?? (stock as any).week52Low, stock.currency, false)}
               stock={stock}
             >
-              <span>52W Low: {formatCurrency(stock.fiftyTwoWeekLow ?? (stock as any).week52Low, stock.currency, false)}</span>
+              <span>52W Low: <strong className="text-[#F0F2F5]">{formatCurrency(stock.fiftyTwoWeekLow ?? (stock as any).week52Low, stock.currency, false)}</strong></span>
             </MetricTooltip>
-            <span className="text-[#E8E9EB] font-medium">52-Week Price Range</span>
+            <span className="text-[#F0F2F5] font-semibold tracking-wide uppercase text-[11px]">52-Week Price Range</span>
             <MetricTooltip
               metricKey="fiftyTwoWeekHigh"
               value={stock.fiftyTwoWeekHigh ?? (stock as any).week52High}
               formattedValue={formatCurrency(stock.fiftyTwoWeekHigh ?? (stock as any).week52High, stock.currency, false)}
               stock={stock}
             >
-              <span>52W High: {formatCurrency(stock.fiftyTwoWeekHigh ?? (stock as any).week52High, stock.currency, false)}</span>
+              <span>52W High: <strong className="text-[#F0F2F5]">{formatCurrency(stock.fiftyTwoWeekHigh ?? (stock as any).week52High, stock.currency, false)}</strong></span>
             </MetricTooltip>
           </div>
-          <div className="relative w-full h-1.5 rounded-full bg-[#151922] border border-[#252A33] overflow-hidden">
+          <div className="relative w-full h-2 rounded-full bg-[#141820] border border-[#1F2633] overflow-hidden">
             <div
-              className="absolute top-0 bottom-0 left-0 bg-[#7FA6C9] rounded-full"
+              className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-[#38BDF8]/80 to-[#38BDF8] rounded-full shadow-sm shadow-[#38BDF8]/40"
               style={{ width: `${rangePercent}%` }}
             />
           </div>
-          <div className="flex justify-between items-center text-[10px] font-mono text-[#8B919C] mt-1.5">
+          <div className="flex justify-between items-center text-[10px] font-mono text-[#8E98A8] mt-1.5">
             <MetricTooltip
               metricKey="distFrom52wHigh"
               value={stock.distFrom52wHigh}
               formattedValue={stock.distFrom52wHigh !== null && stock.distFrom52wHigh !== undefined ? `${stock.distFrom52wHigh.toFixed(1)}% from High` : ''}
               stock={stock}
             >
-              <span>{stock.distFrom52wHigh !== null && stock.distFrom52wHigh !== undefined ? `${stock.distFrom52wHigh.toFixed(1)}% from High` : ''}</span>
+              <span className="text-[#38BDF8]">{stock.distFrom52wHigh !== null && stock.distFrom52wHigh !== undefined ? `${stock.distFrom52wHigh.toFixed(1)}% from High` : ''}</span>
             </MetricTooltip>
-            <span>Volume: {stock.volume ? stock.volume.toLocaleString() : '—'}</span>
+            <span>Volume: <strong className="text-[#F0F2F5] font-mono">{stock.volume ? stock.volume.toLocaleString() : '—'}</strong></span>
           </div>
         </div>
 
         {/* Sector Percentile Rankings Badges */}
         {benchmarkData && benchmarkData.percentileRanks.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-[#252A33]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+          <div className="mt-4 pt-4 border-t border-[#1F2633]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono font-medium text-[#E8E9EB] uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-[#7FA6C9]" />
+                <span className="text-xs font-mono font-bold text-[#F0F2F5] uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-[#38BDF8]" />
                   Sector Percentile Rankings
                 </span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#151922] text-[#8B919C] border border-[#252A33]">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#141820] text-[#8E98A8] border border-[#1F2633]">
                   vs {benchmarkData.totalSectorCompanies} {benchmarkData.sector} peers
                 </span>
               </div>
               <button
                 onClick={() => setActiveTab('peers')}
-                className="text-[11px] font-mono text-[#7FA6C9] hover:text-[#7FA6C9]/80 transition flex items-center gap-1"
+                className="text-[11px] font-mono text-[#38BDF8] hover:underline transition flex items-center gap-1"
               >
                 <span>View Full Peer Matrix & Multiples</span>
                 <ArrowRight className="w-3 h-3" />
@@ -498,7 +498,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             </div>
 
             {/* Badges Flow */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {benchmarkData.percentileRanks.map((rank) => {
                 const isPos = rank.badgeType === 'positive';
                 const isCaut = rank.badgeType === 'caution';
@@ -506,19 +506,19 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                   <div
                     key={rank.metricKey}
                     onClick={() => setActiveTab('peers')}
-                    className="p-2.5 rounded-lg border border-[#252A33] bg-[#151922] hover:border-[#7FA6C9]/50 transition text-xs cursor-pointer"
+                    className="p-3 rounded-xl border border-[#1F2633] bg-[#141820] hover:border-[#38BDF8]/50 transition text-xs cursor-pointer shadow-sm group"
                   >
                     <div className="flex items-center justify-between gap-1.5">
-                      <span className="font-medium text-[#E8E9EB] truncate text-[11px]">
+                      <span className="font-semibold text-[#F0F2F5] group-hover:text-[#38BDF8] transition truncate text-[11px]">
                         {rank.headline}
                       </span>
                       <span
-                        className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded shrink-0 border border-[#252A33] bg-[#0B0D10] ${
+                        className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 border ${
                           isPos
-                            ? 'text-[#6FA58A]'
+                            ? 'text-[#10B981] bg-[#10B981]/10 border-[#10B981]/30'
                             : isCaut
-                            ? 'text-[#B8A36A]'
-                            : 'text-[#8B919C]'
+                            ? 'text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/30'
+                            : 'text-[#8E98A8] bg-[#090B0E] border-[#1F2633]'
                         }`}
                       >
                         {rank.isHigherBetter
@@ -526,7 +526,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                           : `#${rank.rank}/${rank.totalCompared}`}
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#8B919C] font-mono mt-1 truncate">
+                    <div className="text-[10px] text-[#8E98A8] font-mono mt-1.5 truncate">
                       {rank.detail}
                     </div>
                   </div>
@@ -538,24 +538,24 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
       </div>
 
       {/* 2. Interactive Price Chart Card */}
-      <div className="bg-[#11141A] border border-[#252A33] rounded-xl p-5 shadow-sm">
+      <div className="bg-[#0E1217] border border-[#1F2633] rounded-xl p-5 sm:p-6 shadow-xl shadow-black/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-[#E8E9EB]">Historical Price Action</h2>
+              <h2 className="text-sm font-semibold text-[#F0F2F5]">Historical Price Action</h2>
               {hoveredQuote && (
-                <span className="text-xs font-mono text-[#8B919C] bg-[#151922] px-2 py-0.5 rounded border border-[#252A33]">
-                  {formatDate(hoveredQuote.date)}: <strong className="text-[#E8E9EB]">{formatCurrency(hoveredQuote.close, stock.currency, false)}</strong>
+                <span className="text-xs font-mono text-[#8E98A8] bg-[#141820] px-2 py-0.5 rounded border border-[#1F2633]">
+                  {formatDate(hoveredQuote.date)}: <strong className="text-[#38BDF8]">{formatCurrency(hoveredQuote.close, stock.currency, false)}</strong>
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#8B919C] mt-0.5">
-              Live market quotes via Yahoo Finance API
+            <p className="text-xs text-[#8E98A8] mt-0.5">
+              Live market quotes via Yahoo Finance Proxy
             </p>
           </div>
 
           {/* Time range buttons */}
-          <div className="flex items-center gap-1 bg-[#0B0D10] p-1 rounded-lg border border-[#252A33]">
+          <div className="flex items-center gap-1 bg-[#090B0E] p-1 rounded-lg border border-[#1F2633]">
             {(['1d', '5d', '1m', '6m', '1y', '5y'] as const).map((r) => (
               <button
                 key={r}
@@ -563,8 +563,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 onClick={() => setChartRange(r)}
                 className={`px-2.5 py-1 text-xs font-mono uppercase rounded transition ${
                   chartRange === r
-                    ? 'bg-[#151922] text-[#E8E9EB] font-semibold border border-[#252A33]'
-                    : 'text-[#8B919C] hover:text-[#E8E9EB]'
+                    ? 'bg-[#161B26] text-[#F0F2F5] font-semibold border border-[#38BDF8]/40 shadow-sm shadow-[#38BDF8]/20'
+                    : 'text-[#8E98A8] hover:text-[#F0F2F5]'
                 }`}
               >
                 {r}
@@ -574,14 +574,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         </div>
 
         {/* SVG Chart Graphic */}
-        <div className="relative w-full h-[230px] flex items-center justify-center bg-[#0B0D10] rounded-lg border border-[#252A33] overflow-hidden">
+        <div className="relative w-full h-[230px] flex items-center justify-center bg-[#090B0E] rounded-lg border border-[#1F2633] overflow-hidden">
           {isChartLoading ? (
-            <div className="flex items-center gap-2 text-xs font-mono text-[#8B919C]">
-              <RefreshCw className="w-4 h-4 animate-spin text-[#7FA6C9]" />
+            <div className="flex items-center gap-2 text-xs font-mono text-[#8E98A8]">
+              <RefreshCw className="w-4 h-4 animate-spin text-[#38BDF8]" />
               Loading {chartRange.toUpperCase()} quotes...
             </div>
           ) : historyQuotes.length === 0 ? (
-            <div className="text-xs text-[#8B919C] font-mono">
+            <div className="text-xs text-[#8E98A8] font-mono">
               No historical price quotes available for this time range.
             </div>
           ) : (
@@ -592,8 +592,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             >
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#7FA6C9" stopOpacity="0.14" />
-                  <stop offset="100%" stopColor="#7FA6C9" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -607,8 +607,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 <polyline
                   points={points}
                   fill="none"
-                  stroke="#7FA6C9"
-                  strokeWidth="1.5"
+                  stroke="#38BDF8"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -619,14 +619,14 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
       </div>
 
       {/* 3. Navigation Tabs: Overview, Quality Scorecard, Historical Valuation, Growth, Peers, Statements, Data Integrity */}
-      <div className="flex items-center gap-2 border-b border-[#252A33] pb-1 overflow-x-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-[#1F2633] pb-1 overflow-x-auto overscroll-x-contain scrollbar-none">
         <button
           id="detail-tab-overview"
           onClick={() => setActiveTab('overview')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'overview'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -636,15 +636,15 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-scorecard"
           onClick={() => setActiveTab('scorecard')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'scorecard'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Quality Scorecard</span>
-          <span className="px-1.5 py-0.2 rounded bg-[#151922] text-[#6FA58A] border border-[#252A33] font-mono text-[10px]">
+          <span className="px-1.5 py-0.2 rounded bg-[#161B26] text-[#10B981] border border-[#10B981]/30 font-mono text-[10px]">
             6 Pillars
           </span>
         </button>
@@ -652,15 +652,15 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-valuation"
           onClick={() => setActiveTab('valuation')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'valuation'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <CircleDollarSign className="w-3.5 h-3.5" />
           <span>Historical Valuation</span>
-          <span className="px-1.5 py-0.2 rounded bg-[#151922] text-[#B8A36A] border border-[#252A33] font-mono text-[10px]">
+          <span className="px-1.5 py-0.2 rounded bg-[#1C1811] text-[#F59E0B] border border-[#F59E0B]/30 font-mono text-[10px]">
             5Y Range
           </span>
         </button>
@@ -668,10 +668,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-growth"
           onClick={() => setActiveTab('growth')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'growth'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
@@ -681,16 +681,16 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-peers"
           onClick={() => setActiveTab('peers')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'peers'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
           <span>Peer Benchmarking</span>
           {benchmarkData && benchmarkData.peerStocks.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-[#151922] text-[#7FA6C9] border border-[#252A33] font-mono text-[10px]">
+            <span className="px-1.5 py-0.5 rounded-full bg-[#161B26] text-[#38BDF8] border border-[#38BDF8]/40 font-mono text-[10px]">
               {benchmarkData.peerStocks.length}
             </span>
           )}
@@ -699,10 +699,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-financials"
           onClick={() => setActiveTab('financials')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'financials'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -712,10 +712,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
         <button
           id="detail-tab-integrity"
           onClick={() => setActiveTab('integrity')}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-t-lg transition border-b-2 shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition border-b-2 shrink-0 ${
             activeTab === 'integrity'
-              ? 'border-[#7FA6C9] text-[#7FA6C9] bg-[#11141A]'
-              : 'border-transparent text-[#8B919C] hover:text-[#E8E9EB]'
+              ? 'border-[#38BDF8] text-[#38BDF8] bg-[#0E1217]'
+              : 'border-transparent text-[#8E98A8] hover:text-[#F0F2F5]'
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5" />

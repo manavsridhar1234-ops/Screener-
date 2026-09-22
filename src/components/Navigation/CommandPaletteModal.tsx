@@ -135,6 +135,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-[#151922] text-[10px] font-mono text-[#8B919C] border border-[#252A33]">
             ESC
           </kbd>
+          <button
+            onClick={onClose}
+            className="sm:hidden p-1 rounded-lg text-[#8B919C] hover:text-[#E8E9EB] hover:bg-[#151922] transition"
+            aria-label="Close command palette"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Results Area */}

@@ -1,29 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-terminal-bg: #0B0D10;
-  --color-terminal-surface: #11141A;
-  --color-terminal-elevated: #151922;
-  --color-terminal-border: #252A33;
-  --color-terminal-text: #E8E9EB;
-  --color-terminal-muted: #8B919C;
-  --color-terminal-accent: #7FA6C9;
-  --color-terminal-positive: #6FA58A;
-  --color-terminal-negative: #B87878;
-  --color-terminal-gold: #B8A36A;
+  --font-sans: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Rich Institutional Palette */
+  --color-terminal-bg: #090B0E;
+  --color-terminal-surface: #0E1217;
+  --color-terminal-elevated: #141820;
+  --color-terminal-card: #11151D;
+  --color-terminal-border: #1F2633;
+  --color-terminal-border-light: #2A3344;
+  --color-terminal-text: #F0F2F5;
+  --color-terminal-muted: #8E98A8;
+  --color-terminal-accent: #38BDF8;
+  --color-terminal-accent-muted: #0284C7;
+  --color-terminal-positive: #34D399;
+  --color-terminal-negative: #F87171;
+  --color-terminal-gold: #F59E0B;
 }
 
 @layer base {
+  html {
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
   body {
-    background-color: #0B0D10;
-    color: #E8E9EB;
-    font-family: 'Poppins', 'Calibre', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #090B0E;
+    color: #F0F2F5;
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.01em;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.015em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 
   code, kbd, samp, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: 'tnum' on, 'zero' on;
   }
 
   /* Custom subtle scrollbar */
@@ -32,28 +51,49 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B0D10;
+    background: #090B0E;
   }
   ::-webkit-scrollbar-thumb {
-    background: #252A33;
+    background: #1F2633;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #363D4A;
+    background: #2D3748;
   }
 }
 
-/* Institutional Terminal Utility Classes */
-.bg-terminal-bg { background-color: #0B0D10; }
-.bg-terminal-surface { background-color: #11141A; }
-.bg-terminal-elevated { background-color: #151922; }
-.border-terminal-border { border-color: #252A33; }
-.text-terminal-text { color: #E8E9EB; }
-.text-terminal-muted { color: #8B919C; }
-.text-terminal-accent { color: #7FA6C9; }
-.text-terminal-positive { color: #6FA58A; }
-.text-terminal-negative { color: #B87878; }
-.text-terminal-gold { color: #B8A36A; }
+/* Institutional Terminal Utility Classes with Richer Depth */
+.bg-terminal-bg { background-color: #090B0E; }
+.bg-terminal-surface { background-color: #0E1217; }
+.bg-terminal-elevated { background-color: #141820; }
+.border-terminal-border { border-color: #1F2633; }
+.text-terminal-text { color: #F0F2F5; }
+.text-terminal-muted { color: #8E98A8; }
+.text-terminal-accent { color: #38BDF8; }
+.text-terminal-positive { color: #34D399; }
+.text-terminal-negative { color: #F87171; }
+.text-terminal-gold { color: #F59E0B; }
+
+/* Subtle rich surface treatments */
+.rich-surface {
+  background: linear-gradient(180deg, #11151D 0%, #0E1217 100%);
+  border: 1px solid #1F2633;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+}
+
+.rich-surface-elevated {
+  background: linear-gradient(180deg, #161B26 0%, #121620 100%);
+  border: 1px solid #242D3D;
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.55);
+}
+
+.rich-glow-accent {
+  box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.15);
+}
+
+.rich-glow-gold {
+  box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.2);
+}
 
 /* Optimized print layout for 1-Page Investment Memo / Tearsheet */
 @media print {

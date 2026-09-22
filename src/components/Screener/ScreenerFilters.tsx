@@ -79,19 +79,19 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
 
     return (
       <div className={`p-2.5 rounded-lg border transition ${
-        hasValue ? 'bg-[#151922] border-[#7FA6C9]/50' : 'bg-[#151922] border-[#252A33]'
+        hasValue ? 'bg-[#161B26] border-[#38BDF8]/60 shadow-sm shadow-[#38BDF8]/10' : 'bg-[#11151D] border-[#1F2633]'
       }`}>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-[11px] font-medium text-[#E8E9EB] flex items-center gap-1">
+          <label className="text-[11px] font-medium text-[#F0F2F5] flex items-center gap-1">
             <span>{label}</span>
-            {unit && <span className="text-[10px] text-[#8B919C] font-mono">({unit})</span>}
+            {unit && <span className="text-[10px] text-[#8E98A8] font-mono">({unit})</span>}
           </label>
-          <label className="flex items-center gap-1 text-[10px] text-[#8B919C] cursor-pointer select-none">
+          <label className="flex items-center gap-1 text-[10px] text-[#8E98A8] cursor-pointer select-none">
             <input
               type="checkbox"
               checked={range.includeMissing ?? true}
               onChange={(e) => updateRange(key, 'includeMissing', e.target.checked)}
-              className="w-3 h-3 rounded bg-[#0B0D10] border-[#252A33] text-[#7FA6C9] focus:ring-0"
+              className="w-3 h-3 rounded bg-[#090B0E] border-[#1F2633] text-[#38BDF8] focus:ring-0"
             />
             <span>Inc. N/A</span>
           </label>
@@ -104,7 +104,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             placeholder={placeholderMin}
             value={range.min ?? ''}
             onChange={(e) => updateRange(key, 'min', e.target.value)}
-            className="w-full bg-[#0B0D10] border border-[#252A33] rounded px-2 py-1 text-xs text-[#E8E9EB] placeholder-[#8B919C] focus:border-[#7FA6C9] focus:outline-none font-mono"
+            className="w-full bg-[#090B0E] border border-[#1F2633] rounded px-2 py-1 text-xs text-[#F0F2F5] placeholder-[#8E98A8]/60 focus:border-[#38BDF8] focus:outline-none font-mono"
           />
           <input
             type="number"
@@ -112,7 +112,7 @@ export const ScreenerFiltersComponent: React.FC<ScreenerFiltersProps> = ({
             placeholder={placeholderMax}
             value={range.max ?? ''}
             onChange={(e) => updateRange(key, 'max', e.target.value)}
-            className="w-full bg-[#0B0D10] border border-[#252A33] rounded px-2 py-1 text-xs text-[#E8E9EB] placeholder-[#8B919C] focus:border-[#7FA6C9] focus:outline-none font-mono"
+            className="w-full bg-[#090B0E] border border-[#1F2633] rounded px-2 py-1 text-xs text-[#F0F2F5] placeholder-[#8E98A8]/60 focus:border-[#38BDF8] focus:outline-none font-mono"
           />
         </div>
       </div>
